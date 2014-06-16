@@ -11,6 +11,9 @@
 		CB58075D194E876200DF387D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CB58075C194E876200DF387D /* main.m */; };
 		CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CB580760194E876200DF387D /* PMCAppDelegate.m */; };
 		CB580763194E876200DF387D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB580762194E876200DF387D /* Images.xcassets */; };
+		CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */; };
+		CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */; };
+		CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +25,11 @@
 		CB58075F194E876200DF387D /* PMCAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMCAppDelegate.h; sourceTree = "<group>"; };
 		CB580760194E876200DF387D /* PMCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMCAppDelegate.m; sourceTree = "<group>"; };
 		CB580762194E876200DF387D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		CBE7FAD1194E8A1900311B7E /* PMCLibraryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCLibraryViewController.h; sourceTree = "<group>"; };
+		CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCLibraryViewController.m; sourceTree = "<group>"; };
+		CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCVideoTableViewCell.xib; sourceTree = "<group>"; };
+		CBE7FAD6194E8D6200311B7E /* PMCVideoTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCVideoTableViewCell.h; sourceTree = "<group>"; };
+		CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCVideoTableViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +64,11 @@
 			children = (
 				CB58075F194E876200DF387D /* PMCAppDelegate.h */,
 				CB580760194E876200DF387D /* PMCAppDelegate.m */,
+				CBE7FAD1194E8A1900311B7E /* PMCLibraryViewController.h */,
+				CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */,
+				CBE7FAD6194E8D6200311B7E /* PMCVideoTableViewCell.h */,
+				CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */,
+				CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */,
 				CB580762194E876200DF387D /* Images.xcassets */,
 				CB580757194E876200DF387D /* Supporting Files */,
 			);
@@ -127,6 +140,7 @@
 			files = (
 				CB58075B194E876200DF387D /* InfoPlist.strings in Resources */,
 				CB580763194E876200DF387D /* Images.xcassets in Resources */,
+				CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,8 +151,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */,
+				CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,6 +289,7 @@
 				CB58077B194E876200DF387D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
