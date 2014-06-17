@@ -24,11 +24,13 @@
 
     [self.navigationController setToolbarHidden:NO];
     [self setToolbarItems:@[
-                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPause target:self action:@selector(playPause)],
                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(nextVideo)],
+                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemBookmarks target:self action:@selector(nextSubs)],
                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(nextAudio)],
+                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(nextVideo)],
                             ]];
 }
 
@@ -41,12 +43,8 @@
     [self.tableView reloadData];
 }
 
--(void)viewWillAppear:(BOOL)animated {
-    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    self.session = session;
-
-    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/library"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+-(void)refreshVideos {
+    NSURLSessionTask *task = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/library"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSArray *videos = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -54,6 +52,14 @@
         });
     }];
     [task resume];
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+    self.session = session;
+
+    [self refreshVideos];
 }
 
 -(void)enqueueVideo:(NSDictionary *)video {
@@ -69,6 +75,20 @@
 -(void)nextVideo {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/current"]];
     request.HTTPMethod = @"DELETE";
+    NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
+    [task resume];
+}
+
+-(void)nextAudio {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/current"]];
+    request.HTTPMethod = @"NEXTAUDIO";
+    NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
+    [task resume];
+}
+
+-(void)nextSubs {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/current"]];
+    request.HTTPMethod = @"NEXTSUBS";
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
     [task resume];
 }
