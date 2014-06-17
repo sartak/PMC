@@ -110,7 +110,11 @@
     NSDictionary *video = self.videos[indexPath.row];
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [video valueForKeyPath:@"label.ja"];
+    id label = [video valueForKeyPath:@"label.ja"];
+    if (!label || label == [NSNull null]) {
+        label = [video valueForKeyPath:@"label.en"];
+    }
+    cell.titleLabel.text = label;
 
     id identifier = [video valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
