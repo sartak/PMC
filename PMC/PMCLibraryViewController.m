@@ -109,8 +109,17 @@
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *video = self.videos[indexPath.row];
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
+
     cell.titleLabel.text = [video valueForKeyPath:@"label.ja"];
-    cell.identifierLabel.text = [video valueForKeyPath:@"identifier"];
+
+    id identifier = [video valueForKeyPath:@"identifier"];
+    if (!identifier || identifier == [NSNull null]) {
+        cell.identifierLabel.text = @"";
+    }
+    else {
+        cell.identifierLabel.text = identifier;
+    }
+
     return cell;
 }
 
