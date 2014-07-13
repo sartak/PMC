@@ -273,6 +273,7 @@
 				CB58077B194E876200DF387D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
