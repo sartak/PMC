@@ -26,6 +26,8 @@
                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(nextAudio)],
                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(stopPlaying)],
+                            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(nextVideo)],
                             ]];
 }
@@ -94,6 +96,13 @@
 -(void)playPause {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/current"]];
     request.HTTPMethod = @"PLAYPAUSE";
+    NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
+    [task resume];
+}
+
+-(void)stopPlaying {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/current"]];
+    request.HTTPMethod = @"STOP";
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
     [task resume];
 }
