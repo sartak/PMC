@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C369197DCF5000E8077E /* PMCControlsViewController.m */; };
+		CB40C36D197DD06000E8077E /* PMCQueueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C36C197DD06000E8077E /* PMCQueueViewController.m */; };
+		CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */; };
+		CB40C372197DDA2D00E8077E /* PMCStatusViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C371197DDA2D00E8077E /* PMCStatusViewController.m */; };
 		CB58075B194E876200DF387D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CB580759194E876200DF387D /* InfoPlist.strings */; };
 		CB58075D194E876200DF387D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CB58075C194E876200DF387D /* main.m */; };
 		CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CB580760194E876200DF387D /* PMCAppDelegate.m */; };
@@ -17,6 +21,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CB40C368197DCF5000E8077E /* PMCControlsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCControlsViewController.h; sourceTree = "<group>"; };
+		CB40C369197DCF5000E8077E /* PMCControlsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCControlsViewController.m; sourceTree = "<group>"; };
+		CB40C36B197DD06000E8077E /* PMCQueueViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCQueueViewController.h; sourceTree = "<group>"; };
+		CB40C36C197DD06000E8077E /* PMCQueueViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCQueueViewController.m; sourceTree = "<group>"; };
+		CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCControlsViewController.xib; sourceTree = "<group>"; };
+		CB40C370197DDA2D00E8077E /* PMCStatusViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCStatusViewController.h; sourceTree = "<group>"; };
+		CB40C371197DDA2D00E8077E /* PMCStatusViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCStatusViewController.m; sourceTree = "<group>"; };
 		CB58074D194E876200DF387D /* PMC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PMC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB580758194E876200DF387D /* PMC-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PMC-Info.plist"; sourceTree = "<group>"; };
 		CB58075A194E876200DF387D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -64,8 +75,15 @@
 			children = (
 				CB58075F194E876200DF387D /* PMCAppDelegate.h */,
 				CB580760194E876200DF387D /* PMCAppDelegate.m */,
+				CB40C368197DCF5000E8077E /* PMCControlsViewController.h */,
+				CB40C369197DCF5000E8077E /* PMCControlsViewController.m */,
+				CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */,
 				CBE7FAD1194E8A1900311B7E /* PMCLibraryViewController.h */,
 				CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */,
+				CB40C36B197DD06000E8077E /* PMCQueueViewController.h */,
+				CB40C36C197DD06000E8077E /* PMCQueueViewController.m */,
+				CB40C370197DDA2D00E8077E /* PMCStatusViewController.h */,
+				CB40C371197DDA2D00E8077E /* PMCStatusViewController.m */,
 				CBE7FAD6194E8D6200311B7E /* PMCVideoTableViewCell.h */,
 				CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */,
 				CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */,
@@ -139,6 +157,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB58075B194E876200DF387D /* InfoPlist.strings in Resources */,
+				CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */,
 				CB580763194E876200DF387D /* Images.xcassets in Resources */,
 				CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */,
 			);
@@ -151,10 +170,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB40C372197DDA2D00E8077E /* PMCStatusViewController.m in Sources */,
 				CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
+				CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */,
 				CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */,
 				CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */,
+				CB40C36D197DD06000E8077E /* PMCQueueViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

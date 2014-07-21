@@ -1,18 +1,18 @@
-#import "PMCLibraryViewController.h"
+#import "PMCQueueViewController.h"
 #import "PMCVideoTableViewCell.h"
 
-@interface PMCLibraryViewController ()
+@interface PMCQueueViewController ()
 
-@property (nonatomic, strong) NSArray *videos;
 @property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, strong) NSArray *videos;
 
 @end
 
-@implementation PMCLibraryViewController
+@implementation PMCQueueViewController
 
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        self.title = @"Library";
+        self.title = @"Queue";
 
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
@@ -39,7 +39,7 @@
 }
 
 -(void)refreshVideos:(UIRefreshControl *)sender {
-    NSURLSessionTask *task = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/library"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    NSURLSessionTask *task = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/queue"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSArray *videos = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -47,16 +47,6 @@
             [sender endRefreshing];
         });
     }];
-    [task resume];
-}
-
--(void)enqueueVideo:(NSDictionary *)video {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/queue"]];
-    request.HTTPMethod = @"POST";
-    NSString *params = [NSString stringWithFormat:@"video=%@", [video valueForKeyPath:@"id"]];
-    request.HTTPBody = [params dataUsingEncoding:NSUTF8StringEncoding];
-
-    NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
     [task resume];
 }
 
@@ -90,9 +80,9 @@
 #pragma mark - UITableViewDelegate
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *video = self.videos[indexPath.row];
+//    NSDictionary *video = self.videos[indexPath.row];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    [self enqueueVideo:video];
+//    [self enqueueVideo:video];
 }
 
 @end
