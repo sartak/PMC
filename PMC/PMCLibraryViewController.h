@@ -1,3 +1,3 @@
-@interface PMCLibraryViewController : UIViewController
+@interface PMCLibraryViewController : UITableViewController
 
 @end

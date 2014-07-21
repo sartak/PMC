@@ -1,9 +1,7 @@
 #import "PMCLibraryViewController.h"
 #import "PMCVideoTableViewCell.h"
 
-@interface PMCLibraryViewController () <UITableViewDataSource, UITableViewDelegate>
-
-@property (nonatomic, weak) UITableView *tableView;
+@interface PMCLibraryViewController ()
 
 @property (nonatomic, strong) NSArray *videos;
 @property (nonatomic, strong) NSURLSession *session;
@@ -13,14 +11,9 @@
 @implementation PMCLibraryViewController
 
 -(void)loadView {
-    self.view = [[UIView alloc] init];
+    [super loadView];
 
-    UITableView *tableView = [[UITableView alloc] init];
-    self.tableView = tableView;
-    [self.view addSubview:tableView];
-    tableView.dataSource = self;
-    tableView.delegate = self;
-    [tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
 
     [self.navigationController setToolbarHidden:NO];
     [self setToolbarItems:@[
