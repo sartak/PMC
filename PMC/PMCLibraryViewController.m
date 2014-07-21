@@ -13,6 +13,9 @@
 -(void)loadView {
     [super loadView];
 
+    self.refreshControl = [[UIRefreshControl alloc] init];
+    [self.refreshControl addTarget:self action:@selector(refreshVideos:) forControlEvents:UIControlEventValueChanged];
+
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
 
     [self.navigationController setToolbarHidden:NO];
@@ -36,12 +39,13 @@
     [self.tableView reloadData];
 }
 
--(void)refreshVideos {
+-(void)refreshVideos:(UIRefreshControl *)sender {
     NSURLSessionTask *task = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/library"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSArray *videos = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             self.videos = videos;
+            [sender endRefreshing];
         });
     }];
     [task resume];
@@ -52,7 +56,8 @@
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
     self.session = session;
 
-    [self refreshVideos];
+    [self.refreshControl beginRefreshing];
+    [self refreshVideos:self.refreshControl];
 }
 
 -(void)enqueueVideo:(NSDictionary *)video {
