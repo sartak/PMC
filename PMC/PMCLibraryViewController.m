@@ -39,7 +39,8 @@
 }
 
 -(void)refreshRecords:(UIRefreshControl *)sender {
-    NSURLSessionTask *task = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/library"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    NSURL *url = [NSURL URLWithString:@"/library" relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
+    NSURLSessionTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSArray *records = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
