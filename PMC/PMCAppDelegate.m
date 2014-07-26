@@ -13,7 +13,7 @@
     PMCControlsViewController *controls = [[PMCControlsViewController alloc] init];
     UINavigationController *controlsNav = [[UINavigationController alloc] initWithRootViewController:controls];
 
-    PMCLibraryViewController *library = [[PMCLibraryViewController alloc] initWithRequestPath:@"/library"];
+    PMCLibraryViewController *library = [[PMCLibraryViewController alloc] initWithRequestPath:@"/library" forRecord:nil];
     UINavigationController *libraryNav = [[UINavigationController alloc] initWithRootViewController:library];
 
     PMCQueueViewController *queue = [[PMCQueueViewController alloc] init];

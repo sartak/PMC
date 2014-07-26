@@ -2,8 +2,11 @@
 #import "PMCVideoTableViewCell.h"
 #import "PMCSectionTableViewCell.h"
 
+NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotification";
+
 @interface PMCLibraryViewController ()
 
+@property (nonatomic, strong) NSDictionary *currentRecord;
 @property (nonatomic, strong) NSArray *records;
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong, readonly) NSString *requestPath;
@@ -13,18 +16,68 @@
 
 @implementation PMCLibraryViewController
 
--(instancetype)initWithRequestPath:(NSString *)requestPath {
+-(instancetype)initWithRequestPath:(NSString *)requestPath forRecord:(NSDictionary *)record {
     if (self = [self init]) {
         _requestPath = requestPath;
 
-        self.title = @"Library";
         self.currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
+        self.currentRecord = record;
 
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
         self.session = session;
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(languageDidChange:) name:PMCLanguageDidChangeNotification object:nil];
     }
     return self;
+}
+
+-(NSString *)nextLanguage {
+    if ([self.currentLanguage isEqualToString:@"en"]) {
+        return @"ja";
+    }
+    else {
+        return @"en";
+    }
+}
+
+-(IBAction)selectNextLanguage {
+    NSString *oldLanguage = self.currentLanguage;
+    self.currentLanguage = [self nextLanguage];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:PMCLanguageDidChangeNotification object:self userInfo:@{@"old":oldLanguage, @"new":self.currentLanguage}];
+}
+
+-(void)redrawForLanguageChange {
+    self.navigationItem.rightBarButtonItem.title = [self nextLanguage];
+    [self setTitleFromCurrentRecord];
+
+    for (UITableViewCell *cell in self.tableView.visibleCells) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+        NSDictionary *record = self.records[indexPath.row];
+        if (record[@"requestPath"]) {
+            PMCSectionTableViewCell *sectionCell = (PMCSectionTableViewCell *)cell;
+            sectionCell.titleLabel.text = [self extractLabelFromRecord:record];
+        }
+        else {
+            PMCVideoTableViewCell *videoCell = (PMCVideoTableViewCell *)cell;
+            videoCell.titleLabel.text = [self extractLabelFromRecord:record];
+        }
+    }
+}
+
+-(void)languageDidChange:(NSNotification *)notification {
+    self.currentLanguage = notification.userInfo[@"new"];
+    [self redrawForLanguageChange];
+}
+
+-(void)setTitleFromCurrentRecord {
+    if (self.currentRecord) {
+        self.title = [self extractLabelFromRecord:self.currentRecord];
+    }
+    else {
+        self.title = @"Library";
+    }
 }
 
 -(void)loadView {
@@ -38,6 +91,10 @@
 
     [self.refreshControl beginRefreshing];
     [self refreshRecords:self.refreshControl];
+
+    [self setTitleFromCurrentRecord];
+
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[self nextLanguage] style:UIBarButtonItemStylePlain target:self action:@selector(selectNextLanguage)];
 }
 
 -(void)setRecords:(NSArray *)records {
@@ -104,6 +161,10 @@
     return cell;
 }
 
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 #pragma mark - UITableViewDataSource
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -128,8 +189,8 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
     if (record[@"requestPath"]) {
-        PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"]];
-        next.title = [self extractLabelFromRecord:record];
+        PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"] forRecord:record];
+        next.currentLanguage = self.currentLanguage;
 
         [self.navigationController pushViewController:next animated:YES];
     }
