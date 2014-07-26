@@ -76,7 +76,12 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         self.title = [self extractLabelFromRecord:self.currentRecord];
     }
     else {
-        self.title = @"Library";
+        if ([self.currentLanguage isEqualToString:@"ja"]) {
+            self.title = @"ライブラリ";
+        }
+        else {
+            self.title = @"Library";
+        }
     }
 }
 
