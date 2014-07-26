@@ -123,6 +123,13 @@
 
     if (record[@"requestPath"]) {
         PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"]];
+
+        id title = [record valueForKeyPath:@"label.ja"];
+        if (!title || title == [NSNull null]) {
+            title = [record valueForKeyPath:@"label.en"];
+        }
+        next.title = title;
+
         [self.navigationController pushViewController:next animated:YES];
     }
     else {
