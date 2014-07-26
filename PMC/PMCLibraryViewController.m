@@ -17,9 +17,6 @@
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
         self.session = session;
-
-        [self.refreshControl beginRefreshing];
-        [self refreshRecords:self.refreshControl];
     }
     return self;
 }
@@ -31,6 +28,9 @@
     [self.refreshControl addTarget:self action:@selector(refreshRecords:) forControlEvents:UIControlEventValueChanged];
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
+
+    [self.refreshControl beginRefreshing];
+    [self refreshRecords:self.refreshControl];
 }
 
 -(void)setRecords:(NSArray *)records {
