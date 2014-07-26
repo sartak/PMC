@@ -15,12 +15,7 @@
 -(instancetype)initWithRequestPath:(NSString *)requestPath {
     if (self = [self init]) {
         _requestPath = requestPath;
-    }
-    return self;
-}
 
--(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.title = @"Library";
 
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
