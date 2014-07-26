@@ -69,11 +69,7 @@
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
 
-    id label = [video valueForKeyPath:@"label.ja"];
-    if (!label || label == [NSNull null]) {
-        label = [video valueForKeyPath:@"label.en"];
-    }
-    cell.titleLabel.text = label;
+    cell.titleLabel.text = [self extractLabelFromRecord:video];
 
     id identifier = [video valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
@@ -86,14 +82,22 @@
     return cell;
 }
 
+-(NSString *)extractLabelFromRecord:(NSDictionary *)record {
+    for (NSString *lang in [@"ja", @"en"]) {
+        NSString *keyPath = [@"label." stringByAppendingString:lang];
+        id label = [record valueForKeyPath:keyPath];
+        if (label && label != [NSNull null]) {
+            return label;
+        }
+    }
+
+    return nil;
+}
+
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForSection:(NSDictionary *)section atIndexPath:(NSIndexPath *)indexPath {
     PMCSectionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Section" forIndexPath:indexPath];
 
-    id label = [section valueForKeyPath:@"label.ja"];
-    if (!label || label == [NSNull null]) {
-        label = [section valueForKeyPath:@"label.en"];
-    }
-    cell.titleLabel.text = label;
+    cell.titleLabel.text = [self extractLabelFromRecord:section];
 
     return cell;
 }
@@ -123,12 +127,7 @@
 
     if (record[@"requestPath"]) {
         PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"]];
-
-        id title = [record valueForKeyPath:@"label.ja"];
-        if (!title || title == [NSNull null]) {
-            title = [record valueForKeyPath:@"label.en"];
-        }
-        next.title = title;
+        next.title = [self extractLabelFromRecord:record];
 
         [self.navigationController pushViewController:next animated:YES];
     }
