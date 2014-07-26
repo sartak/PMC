@@ -3,7 +3,7 @@
 
 @interface PMCLibraryViewController ()
 
-@property (nonatomic, strong) NSArray *videos;
+@property (nonatomic, strong) NSArray *records;
 @property (nonatomic, strong) NSURLSession *session;
 
 @end
@@ -19,7 +19,7 @@
         self.session = session;
 
         [self.refreshControl beginRefreshing];
-        [self refreshVideos:self.refreshControl];
+        [self refreshRecords:self.refreshControl];
     }
     return self;
 }
@@ -28,22 +28,22 @@
     [super loadView];
 
     self.refreshControl = [[UIRefreshControl alloc] init];
-    [self.refreshControl addTarget:self action:@selector(refreshVideos:) forControlEvents:UIControlEventValueChanged];
+    [self.refreshControl addTarget:self action:@selector(refreshRecords:) forControlEvents:UIControlEventValueChanged];
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
 }
 
--(void)setVideos:(NSArray *)videos {
-    _videos = videos;
+-(void)setRecords:(NSArray *)records {
+    _records = records;
     [self.tableView reloadData];
 }
 
--(void)refreshVideos:(UIRefreshControl *)sender {
+-(void)refreshRecords:(UIRefreshControl *)sender {
     NSURLSessionTask *task = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/library"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSArray *videos = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        NSArray *records = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.videos = videos;
+            self.records = records;
             [sender endRefreshing];
         });
     }];
@@ -60,14 +60,7 @@
     [task resume];
 }
 
-#pragma mark - UITableViewDataSource
-
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.videos.count;
-}
-
--(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *video = self.videos[indexPath.row];
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
 
     id label = [video valueForKeyPath:@"label.ja"];
@@ -86,13 +79,23 @@
 
     return cell;
 }
+#pragma mark - UITableViewDataSource
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.records.count;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSDictionary *record = self.records[indexPath.row];
+    return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];
+}
 
 #pragma mark - UITableViewDelegate
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *video = self.videos[indexPath.row];
+    NSDictionary *record = self.records[indexPath.row];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    [self enqueueVideo:video];
+    [self enqueueVideo:record];
 }
 
 @end
