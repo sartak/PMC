@@ -49,7 +49,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 }
 
 -(void)redrawForLanguageChange {
-    self.navigationItem.rightBarButtonItem.title = [self nextLanguage];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[self nextLanguage] style:UIBarButtonItemStylePlain target:self action:@selector(selectNextLanguage)];
     [self setTitleFromCurrentRecord];
 
     for (UITableViewCell *cell in self.tableView.visibleCells) {
