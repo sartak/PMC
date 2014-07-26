@@ -7,6 +7,7 @@
 @property (nonatomic, strong) NSArray *records;
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong, readonly) NSString *requestPath;
+@property (nonatomic, strong) NSString *currentLanguage;
 
 @end
 
@@ -17,6 +18,7 @@
         _requestPath = requestPath;
 
         self.title = @"Library";
+        self.currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
 
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
@@ -83,7 +85,7 @@
 }
 
 -(NSString *)extractLabelFromRecord:(NSDictionary *)record {
-    for (NSString *lang in [@"ja", @"en"]) {
+    for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
         NSString *keyPath = [@"label." stringByAppendingString:lang];
         id label = [record valueForKeyPath:keyPath];
         if (label && label != [NSNull null]) {
