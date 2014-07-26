@@ -1,19 +1,20 @@
 #import "PMCLibraryViewController.h"
 #import "PMCVideoTableViewCell.h"
+#import "PMCSectionTableViewCell.h"
 
 @interface PMCLibraryViewController ()
 
 @property (nonatomic, strong) NSArray *records;
 @property (nonatomic, strong) NSURLSession *session;
-@property (nonatomic, strong, readonly) NSString *path;
+@property (nonatomic, strong, readonly) NSString *requestPath;
 
 @end
 
 @implementation PMCLibraryViewController
 
--(instancetype)initWithPath:(NSString *)path {
+-(instancetype)initWithRequestPath:(NSString *)requestPath {
     if (self = [self init]) {
-        _path = path;
+        _requestPath = requestPath;
     }
     return self;
 }
@@ -36,6 +37,7 @@
     [self.refreshControl addTarget:self action:@selector(refreshRecords:) forControlEvents:UIControlEventValueChanged];
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCSectionTableViewCell" bundle:nil] forCellReuseIdentifier:@"Section"];
 
     [self.refreshControl beginRefreshing];
     [self refreshRecords:self.refreshControl];
@@ -47,7 +49,7 @@
 }
 
 -(void)refreshRecords:(UIRefreshControl *)sender {
-    NSURL *url = [NSURL URLWithString:self.path relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
+    NSURL *url = [NSURL URLWithString:self.requestPath relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
     NSURLSessionTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSArray *records = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
@@ -88,6 +90,19 @@
 
     return cell;
 }
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForSection:(NSDictionary *)section atIndexPath:(NSIndexPath *)indexPath {
+    PMCSectionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Section" forIndexPath:indexPath];
+
+    id label = [section valueForKeyPath:@"label.ja"];
+    if (!label || label == [NSNull null]) {
+        label = [section valueForKeyPath:@"label.en"];
+    }
+    cell.titleLabel.text = label;
+
+    return cell;
+}
+
 #pragma mark - UITableViewDataSource
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -96,7 +111,13 @@
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *record = self.records[indexPath.row];
-    return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];
+
+    if (record[@"requestPath"]) {
+        return [self tableView:tableView cellForSection:record atIndexPath:indexPath];
+    }
+    else {
+        return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];
+    }
 }
 
 #pragma mark - UITableViewDelegate
@@ -104,7 +125,14 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *record = self.records[indexPath.row];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    [self enqueueVideo:record];
+
+    if (record[@"requestPath"]) {
+        PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"]];
+        [self.navigationController pushViewController:next animated:YES];
+    }
+    else {
+        [self enqueueVideo:record];
+    }
 }
 
 @end

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB28F3E51984403300EB184A /* PMCSectionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB28F3E41984403300EB184A /* PMCSectionTableViewCell.m */; };
+		CB28F3E71984405200EB184A /* PMCSectionTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB28F3E61984405200EB184A /* PMCSectionTableViewCell.xib */; };
 		CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C369197DCF5000E8077E /* PMCControlsViewController.m */; };
 		CB40C36D197DD06000E8077E /* PMCQueueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C36C197DD06000E8077E /* PMCQueueViewController.m */; };
 		CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */; };
@@ -21,6 +23,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CB28F3E31984403300EB184A /* PMCSectionTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCSectionTableViewCell.h; sourceTree = "<group>"; };
+		CB28F3E41984403300EB184A /* PMCSectionTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCSectionTableViewCell.m; sourceTree = "<group>"; };
+		CB28F3E61984405200EB184A /* PMCSectionTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCSectionTableViewCell.xib; sourceTree = "<group>"; };
 		CB40C368197DCF5000E8077E /* PMCControlsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCControlsViewController.h; sourceTree = "<group>"; };
 		CB40C369197DCF5000E8077E /* PMCControlsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCControlsViewController.m; sourceTree = "<group>"; };
 		CB40C36B197DD06000E8077E /* PMCQueueViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCQueueViewController.h; sourceTree = "<group>"; };
@@ -87,6 +92,9 @@
 				CBE7FAD6194E8D6200311B7E /* PMCVideoTableViewCell.h */,
 				CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */,
 				CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */,
+				CB28F3E31984403300EB184A /* PMCSectionTableViewCell.h */,
+				CB28F3E41984403300EB184A /* PMCSectionTableViewCell.m */,
+				CB28F3E61984405200EB184A /* PMCSectionTableViewCell.xib */,
 				CB580762194E876200DF387D /* Images.xcassets */,
 				CB580757194E876200DF387D /* Supporting Files */,
 			);
@@ -159,6 +167,7 @@
 				CB58075B194E876200DF387D /* InfoPlist.strings in Resources */,
 				CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */,
 				CB580763194E876200DF387D /* Images.xcassets in Resources */,
+				CB28F3E71984405200EB184A /* PMCSectionTableViewCell.xib in Resources */,
 				CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -174,6 +183,7 @@
 				CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */,
+				CB28F3E51984403300EB184A /* PMCSectionTableViewCell.m in Sources */,
 				CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */,
 				CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */,
 				CB40C36D197DD06000E8077E /* PMCQueueViewController.m in Sources */,

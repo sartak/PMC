@@ -1,5 +1,5 @@
 @interface PMCLibraryViewController : UITableViewController
 
--(instancetype)initWithPath:(NSString *)path;
+-(instancetype)initWithRequestPath:(NSString *)requestPath;
 
 @end
