@@ -5,10 +5,18 @@
 
 @property (nonatomic, strong) NSArray *records;
 @property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, strong, readonly) NSString *path;
 
 @end
 
 @implementation PMCLibraryViewController
+
+-(instancetype)initWithPath:(NSString *)path {
+    if (self = [self init]) {
+        _path = path;
+    }
+    return self;
+}
 
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
@@ -39,7 +47,7 @@
 }
 
 -(void)refreshRecords:(UIRefreshControl *)sender {
-    NSURL *url = [NSURL URLWithString:@"/library" relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
+    NSURL *url = [NSURL URLWithString:self.path relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
     NSURLSessionTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSArray *records = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
