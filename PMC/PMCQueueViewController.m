@@ -140,9 +140,22 @@
 #pragma mark - UITableViewDelegate
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-//    NSDictionary *video = self.videos[indexPath.row];
+    NSDictionary *video = self.videos[indexPath.row];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-//    [self enqueueVideo:video];
+
+    if (video[@"removePath"]) {
+        [self dequeueVideo:video];
+
+        NSMutableArray *newVideos = [NSMutableArray array];
+        for (NSDictionary *v in self.videos) {
+            if (v != video) {
+                [newVideos addObject:v];
+            }
+        }
+
+        self.videos = [newVideos copy];
+        [tableView reloadData];
+    }
 }
 
 @end
