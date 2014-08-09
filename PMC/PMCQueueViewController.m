@@ -37,13 +37,17 @@
 }
 
 -(void)refreshVideos:(UIRefreshControl *)sender {
+    __block BOOL refreshedCurrent = NO;
+    __block BOOL refreshedVideos = NO;
+
     NSURLSessionTask *queueTask = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/queue"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSArray *videos = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             self.videos = videos;
+            refreshedVideos = YES;
 
-            if (self.currentVideo) {
+            if (refreshedCurrent) {
                 [self.tableView reloadData];
                 [sender endRefreshing];
             }
@@ -55,8 +59,9 @@
 
         dispatch_async(dispatch_get_main_queue(), ^{
             self.currentVideo = currentVideo;
+            refreshedCurrent = YES;
 
-            if (self.videos) {
+            if (refreshedVideos) {
                 [self.tableView reloadData];
                 [sender endRefreshing];
             }
