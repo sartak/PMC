@@ -88,7 +88,7 @@
 }
 
 -(void)dequeueVideo:(NSDictionary *)video {
-    NSURL *url = [NSURL URLWithString:video[@"removePath"]];
+    NSURL *url = [NSURL URLWithString:video[@"removePath"] relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = @"REMOVE";
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
