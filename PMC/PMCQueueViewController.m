@@ -32,6 +32,8 @@
 
     [self.refreshControl beginRefreshing];
     [self refreshVideos:self.refreshControl];
+
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Clear" style:UIBarButtonItemStylePlain target:self action:@selector(clearQueue)];
 }
 
 -(void)refreshVideos:(UIRefreshControl *)sender {
@@ -63,6 +65,21 @@
 
     [queueTask resume];
     [currentTask resume];
+}
+
+-(void)clearQueue {
+    NSURL *url = [NSURL URLWithString:@"http://10.0.1.13:5000/queue"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"DELETE";
+    [self.refreshControl beginRefreshing];
+    NSURLSessionTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.videos = @[];
+            [self.tableView reloadData];
+            [self.refreshControl endRefreshing];
+        });
+    }];
+    [task resume];
 }
 
 #pragma mark - UITableViewDataSource
