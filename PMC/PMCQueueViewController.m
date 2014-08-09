@@ -82,6 +82,14 @@
     [task resume];
 }
 
+-(void)dequeueVideo:(NSDictionary *)video {
+    NSURL *url = [NSURL URLWithString:video[@"removePath"]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"REMOVE";
+    NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
+    [task resume];
+}
+
 #pragma mark - UITableViewDataSource
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
