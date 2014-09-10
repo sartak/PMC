@@ -2,6 +2,8 @@
 #import "PMCVideoTableViewCell.h"
 #import "PMCSectionTableViewCell.h"
 
+@import MediaPlayer;
+
 NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotification";
 
 @interface PMCLibraryViewController ()
@@ -210,6 +212,22 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://10.0.1.13:5000/stream?video=%d", [[record valueForKeyPath:@"id"] intValue]]];
     [[UIApplication sharedApplication] openURL:url];
+
+/*
+    MPMoviePlayerController *moviePlayer = [[MPMoviePlayerController alloc] initWithContentURL:url];
+    [moviePlayer setControlStyle:MPMovieControlStyleDefault];
+    moviePlayer.scalingMode = MPMovieScalingModeAspectFit;
+    [moviePlayer.view setFrame:self.view.bounds];
+    [self.view addSubview: moviePlayer.view];
+    [self.view bringSubviewToFront:moviePlayer.view];
+   // [[NSNotificationCenter defaultCenter] addObserver:self
+   //                                          selector:@selector(moviePlayBackDidFinish:)
+   //                                              name:MPMoviePlayerPlaybackDidFinishNotification
+   //                                            object:moviePlayer];
+    [moviePlayer prepareToPlay];
+    [moviePlayer play];
+ */
 }
+
 
 @end
