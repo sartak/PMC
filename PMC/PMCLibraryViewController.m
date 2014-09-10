@@ -204,4 +204,12 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 }
 
+-(void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    NSDictionary *record = self.records[indexPath.row];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://10.0.1.13:5000/stream?video=%d", [[record valueForKeyPath:@"id"] intValue]]];
+    [[UIApplication sharedApplication] openURL:url];
+}
+
 @end
