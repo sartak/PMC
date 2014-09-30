@@ -145,6 +145,16 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         cell.identifierLabel.text = identifier;
     }
 
+    if (![[video valueForKeyPath:@"streamable"] boolValue]) {
+        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
+    }
+    else if ([[video valueForKeyPath:@"watched"] isEqual:[NSNull null]]) {
+        cell.backgroundColor = [UIColor whiteColor];
+    }
+    else {
+        cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:.22f brightness:1 alpha:1];
+    }
+
     return cell;
 }
 
