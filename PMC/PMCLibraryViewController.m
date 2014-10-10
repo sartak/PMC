@@ -145,6 +145,25 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         cell.identifierLabel.text = identifier;
     }
 
+    id duration = [video valueForKeyPath:@"duration_seconds"];
+    if (!duration || duration == [NSNull null]) {
+        cell.durationLabel.text = @"";
+    }
+    else {
+        int seconds = [duration intValue];
+        int minutes = seconds / 60;
+        seconds %= 60;
+        int hours = minutes / 60;
+        minutes %= 60;
+
+        if (hours) {
+            cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d:%02d", hours, minutes, seconds];
+        }
+        else {
+            cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d", minutes, seconds];
+        }
+    }
+
     if (![[video valueForKeyPath:@"streamable"] boolValue]) {
         cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
     }
