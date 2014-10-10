@@ -164,6 +164,9 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         }
     }
 
+    cell.immersionIndicator.hidden = ![[video valueForKeyPath:@"immersible"] boolValue];
+    cell.immersionIndicator.tintColor = [UIColor greenColor];
+
     if (![[video valueForKeyPath:@"streamable"] boolValue]) {
         cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
     }
