@@ -1,6 +1,7 @@
 #import "PMCLibraryViewController.h"
 #import "PMCVideoTableViewCell.h"
 #import "PMCSectionTableViewCell.h"
+#import "PMCSummaryTableViewCell.h"
 
 @import MediaPlayer;
 
@@ -13,6 +14,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong, readonly) NSString *requestPath;
 @property (nonatomic, strong) NSString *currentLanguage;
+@property (nonatomic) int totalDuration;
+@property (nonatomic) int totalVideos;
 
 @end
 
@@ -95,6 +98,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCSectionTableViewCell" bundle:nil] forCellReuseIdentifier:@"Section"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCSummaryTableViewCell" bundle:nil] forCellReuseIdentifier:@"Summary"];
 
     [self.refreshControl beginRefreshing];
     [self refreshRecords:self.refreshControl];
@@ -106,6 +110,21 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
 -(void)setRecords:(NSArray *)records {
     _records = records;
+
+    self.totalDuration = 0;
+    self.totalVideos = 0;
+
+    for (NSDictionary *record in records) {
+        if (!record[@"requestPath"]) {
+            self.totalVideos++;
+
+            id duration = [record valueForKeyPath:@"duration_seconds"];
+            if (duration && duration != [NSNull null]) {
+                self.totalDuration += [duration intValue];
+            }
+        }
+    }
+
     [self.tableView reloadData];
 }
 
@@ -192,6 +211,32 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     return nil;
 }
 
+-(UITableViewCell *)tableView:(UITableView *)tableView summaryCellAtIndexPath:(NSIndexPath *)indexPath {
+    PMCSummaryTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Summary" forIndexPath:indexPath];
+
+    if (self.totalVideos == 1) {
+        cell.titleLabel.text = @"1 video";
+    }
+    else {
+        cell.titleLabel.text = [NSString stringWithFormat:@"%d videos", self.totalVideos];
+    }
+
+    int seconds = self.totalDuration;
+    int minutes = seconds / 60;
+    seconds %= 60;
+    int hours = minutes / 60;
+    minutes %= 60;
+
+    if (hours) {
+        cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d:%02d", hours, minutes, seconds];
+    }
+    else {
+        cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d", minutes, seconds];
+    }
+
+    return cell;
+}
+
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForSection:(NSDictionary *)section atIndexPath:(NSIndexPath *)indexPath {
     PMCSectionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Section" forIndexPath:indexPath];
 
@@ -206,18 +251,35 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
 #pragma mark - UITableViewDataSource
 
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    if (self.totalVideos > 1) {
+        return 2;
+    }
+    return 1;
+}
+
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.records.count;
+    if (section == 0) {
+        return self.records.count;
+    }
+    else {
+        return 1;
+    }
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *record = self.records[indexPath.row];
 
-    if (record[@"requestPath"]) {
-        return [self tableView:tableView cellForSection:record atIndexPath:indexPath];
+    if (indexPath.section == 0) {
+        if (record[@"requestPath"]) {
+            return [self tableView:tableView cellForSection:record atIndexPath:indexPath];
+        }
+        else {
+            return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];
+        }
     }
     else {
-        return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];
+        return [self tableView:tableView summaryCellAtIndexPath:indexPath];
     }
 }
 

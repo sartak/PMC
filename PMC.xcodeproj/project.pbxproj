@@ -13,6 +13,8 @@
 		CB40C36D197DD06000E8077E /* PMCQueueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C36C197DD06000E8077E /* PMCQueueViewController.m */; };
 		CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */; };
 		CB40C372197DDA2D00E8077E /* PMCStatusViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C371197DDA2D00E8077E /* PMCStatusViewController.m */; };
+		CB47835819E8CABD006D8E51 /* PMCSummaryTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB47835619E8CABD006D8E51 /* PMCSummaryTableViewCell.m */; };
+		CB47835919E8CABD006D8E51 /* PMCSummaryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB47835719E8CABD006D8E51 /* PMCSummaryTableViewCell.xib */; };
 		CB58075B194E876200DF387D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CB580759194E876200DF387D /* InfoPlist.strings */; };
 		CB58075D194E876200DF387D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CB58075C194E876200DF387D /* main.m */; };
 		CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CB580760194E876200DF387D /* PMCAppDelegate.m */; };
@@ -33,6 +35,9 @@
 		CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCControlsViewController.xib; sourceTree = "<group>"; };
 		CB40C370197DDA2D00E8077E /* PMCStatusViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCStatusViewController.h; sourceTree = "<group>"; };
 		CB40C371197DDA2D00E8077E /* PMCStatusViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCStatusViewController.m; sourceTree = "<group>"; };
+		CB47835519E8CABD006D8E51 /* PMCSummaryTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCSummaryTableViewCell.h; sourceTree = "<group>"; };
+		CB47835619E8CABD006D8E51 /* PMCSummaryTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCSummaryTableViewCell.m; sourceTree = "<group>"; };
+		CB47835719E8CABD006D8E51 /* PMCSummaryTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCSummaryTableViewCell.xib; sourceTree = "<group>"; };
 		CB58074D194E876200DF387D /* PMC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PMC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB580758194E876200DF387D /* PMC-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PMC-Info.plist"; sourceTree = "<group>"; };
 		CB58075A194E876200DF387D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -95,6 +100,9 @@
 				CB28F3E31984403300EB184A /* PMCSectionTableViewCell.h */,
 				CB28F3E41984403300EB184A /* PMCSectionTableViewCell.m */,
 				CB28F3E61984405200EB184A /* PMCSectionTableViewCell.xib */,
+				CB47835519E8CABD006D8E51 /* PMCSummaryTableViewCell.h */,
+				CB47835619E8CABD006D8E51 /* PMCSummaryTableViewCell.m */,
+				CB47835719E8CABD006D8E51 /* PMCSummaryTableViewCell.xib */,
 				CB580762194E876200DF387D /* Images.xcassets */,
 				CB580757194E876200DF387D /* Supporting Files */,
 			);
@@ -167,6 +175,7 @@
 				CB58075B194E876200DF387D /* InfoPlist.strings in Resources */,
 				CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */,
 				CB580763194E876200DF387D /* Images.xcassets in Resources */,
+				CB47835919E8CABD006D8E51 /* PMCSummaryTableViewCell.xib in Resources */,
 				CB28F3E71984405200EB184A /* PMCSectionTableViewCell.xib in Resources */,
 				CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */,
 			);
@@ -181,6 +190,7 @@
 			files = (
 				CB40C372197DDA2D00E8077E /* PMCStatusViewController.m in Sources */,
 				CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */,
+				CB47835819E8CABD006D8E51 /* PMCSummaryTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */,
 				CB28F3E51984403300EB184A /* PMCSectionTableViewCell.m in Sources */,
