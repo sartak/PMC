@@ -158,6 +158,9 @@
         }
     }
 
+    cell.immersionIndicator.hidden = ![[video valueForKeyPath:@"immersible"] boolValue];
+    cell.immersionIndicator.tintColor = [UIColor greenColor];
+
     if (isCurrent) {
         cell.backgroundColor = [UIColor colorWithWhite:0.95f alpha:1];
     }
