@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6245" systemVersion="13F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
+        <deployment defaultVersion="1808" identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6238"/>
     </dependencies>
     <objects>
@@ -14,58 +15,58 @@
             <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="09r-6V-mu5">
-                    <rect key="frame" x="20" y="79" width="30" height="30"/>
-                    <state key="normal" title="Play">
+                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="09r-6V-mu5">
+                    <rect key="frame" x="8" y="74" width="64" height="64"/>
+                    <state key="normal" image="Play">
                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
                     <connections>
                         <action selector="playPause" destination="-1" eventType="touchUpInside" id="C0X-p0-lLy"/>
                     </connections>
                 </button>
-                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0Eh-53-KLH">
-                    <rect key="frame" x="20" y="117" width="40" height="30"/>
-                    <state key="normal" title="Audio">
-                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                    </state>
-                    <connections>
-                        <action selector="nextAudio" destination="-1" eventType="touchUpInside" id="38R-Wq-Xj9"/>
-                    </connections>
-                </button>
-                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7dF-1O-6vn">
-                    <rect key="frame" x="20" y="155" width="36" height="30"/>
-                    <state key="normal" title="Subs">
+                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7dF-1O-6vn">
+                    <rect key="frame" x="8" y="146" width="64" height="64"/>
+                    <state key="normal" image="Book">
                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
                     <connections>
                         <action selector="nextSubs" destination="-1" eventType="touchUpInside" id="o8M-ov-UNN"/>
                     </connections>
                 </button>
-                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xOQ-Zh-nsJ">
-                    <rect key="frame" x="20" y="193" width="75" height="30"/>
-                    <state key="normal" title="Next Video">
+                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xOQ-Zh-nsJ">
+                    <rect key="frame" x="128" y="74" width="64" height="64"/>
+                    <state key="normal" image="Fast Forward">
                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
                     <connections>
                         <action selector="nextVideo" destination="-1" eventType="touchUpInside" id="rTn-Cf-Gka"/>
                     </connections>
                 </button>
-                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jO0-gw-Xku">
-                    <rect key="frame" x="20" y="231" width="33" height="30"/>
-                    <state key="normal" title="Stop">
+                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jO0-gw-Xku">
+                    <rect key="frame" x="248" y="74" width="64" height="64"/>
+                    <state key="normal" image="Stop">
                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
                     <connections>
                         <action selector="stopPlaying" destination="-1" eventType="touchUpInside" id="Bzx-cS-xDg"/>
                     </connections>
                 </button>
-                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="90E-YO-dhE">
-                    <rect key="frame" x="20" y="269" width="88" height="30"/>
-                    <state key="normal" title="Shutdown Pi">
+                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="90E-YO-dhE">
+                    <rect key="frame" x="248" y="146" width="64" height="64"/>
+                    <state key="normal" image="Eject">
                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
                     <connections>
                         <action selector="shutdownPi" destination="-1" eventType="touchUpInside" id="s6S-UI-Gf2"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0Eh-53-KLH">
+                    <rect key="frame" x="128" y="146" width="64" height="64"/>
+                    <state key="normal" image="Microphone">
+                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                    <connections>
+                        <action selector="nextAudio" destination="-1" eventType="touchUpInside" id="38R-Wq-Xj9"/>
                     </connections>
                 </button>
             </subviews>
@@ -74,6 +75,14 @@
             <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
         </view>
     </objects>
+    <resources>
+        <image name="Book" width="24" height="22"/>
+        <image name="Eject" width="18" height="17"/>
+        <image name="Fast Forward" width="25" height="18"/>
+        <image name="Microphone" width="17" height="24"/>
+        <image name="Play" width="16" height="18"/>
+        <image name="Stop" width="14" height="14"/>
+    </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>

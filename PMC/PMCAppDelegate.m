@@ -11,15 +11,19 @@
     self.window.backgroundColor = [UIColor whiteColor];
 
     PMCControlsViewController *controls = [[PMCControlsViewController alloc] init];
+    controls.tabBarItem.image = [UIImage imageNamed:@"Play Circle"];
     UINavigationController *controlsNav = [[UINavigationController alloc] initWithRootViewController:controls];
 
     PMCLibraryViewController *library = [[PMCLibraryViewController alloc] initWithRequestPath:@"/library" forRecord:nil];
+    library.tabBarItem.image = [UIImage imageNamed:@"Albums"];
     UINavigationController *libraryNav = [[UINavigationController alloc] initWithRootViewController:library];
 
     PMCQueueViewController *queue = [[PMCQueueViewController alloc] init];
+    queue.tabBarItem.image = [UIImage imageNamed:@"Playlist"];
     UINavigationController *queueNav = [[UINavigationController alloc] initWithRootViewController:queue];
 
     PMCStatusViewController *status = [[PMCStatusViewController alloc] init];
+    status.tabBarItem.image = [UIImage imageNamed:@"Info"];
     UINavigationController *statusNav = [[UINavigationController alloc] initWithRootViewController:status];
 
 
