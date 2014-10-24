@@ -48,11 +48,11 @@
         }
     }];
 
-    [[PMCHTTPClient sharedClient] jsonFrom:@"/current" completion:^(NSArray *videos, NSError *error) {
-        self.videos = videos;
-        refreshedVideos = YES;
+    [[PMCHTTPClient sharedClient] jsonFrom:@"/current" completion:^(NSDictionary *currentVideo, NSError *error) {
+        self.currentVideo = currentVideo;
+        refreshedCurrent = YES;
 
-        if (refreshedCurrent) {
+        if (refreshedVideos) {
             [self.tableView reloadData];
             [sender endRefreshing];
         }
