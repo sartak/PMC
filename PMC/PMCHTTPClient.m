@@ -62,10 +62,17 @@
         request.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
     }
 
+    NSLog(@"%@ %@", request.HTTPMethod, request.URL);
+
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completion(error);
-        });
+        if (error) {
+            NSLog(@"%@", error);
+        }
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(error);
+            });
+        }
     }];
     [task resume];
 }
@@ -78,7 +85,13 @@
     [request addValue:[self password] forHTTPHeaderField:@"X-PMC-Password"];
     request.HTTPMethod = @"GET";
 
+    NSLog(@"%@ %@", request.HTTPMethod, request.URL);
+
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            NSLog(@"%@", error);
+        }
+
         id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
