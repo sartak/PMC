@@ -38,7 +38,7 @@
     __block BOOL refreshedCurrent = NO;
     __block BOOL refreshedVideos = NO;
 
-    [[PMCHTTPClient sharedClient] jsonFrom:@"queue" completion:^(NSArray *videos, NSError *error) {
+    [[PMCHTTPClient sharedClient] jsonFrom:@"/queue" completion:^(NSArray *videos, NSError *error) {
         self.videos = videos;
         refreshedVideos = YES;
 
@@ -48,7 +48,7 @@
         }
     }];
 
-    [[PMCHTTPClient sharedClient] jsonFrom:@"current" completion:^(NSArray *videos, NSError *error) {
+    [[PMCHTTPClient sharedClient] jsonFrom:@"/current" completion:^(NSArray *videos, NSError *error) {
         self.videos = videos;
         refreshedVideos = YES;
 
@@ -61,7 +61,7 @@
 
 -(void)clearQueue {
     [self.refreshControl beginRefreshing];
-    [[PMCHTTPClient sharedClient] sendMethod:@"DELETE" toEndpoint:@"queue" completion:^(NSError *error) {
+    [[PMCHTTPClient sharedClient] sendMethod:@"DELETE" toEndpoint:@"/queue" completion:^(NSError *error) {
         self.videos = @[];
         [self.tableView reloadData];
         [self.refreshControl endRefreshing];

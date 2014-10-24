@@ -136,7 +136,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 -(void)enqueueVideo:(NSDictionary *)video {
     [[PMCHTTPClient sharedClient] sendMethod:@"POST"
                                   toEndpoint:@"/queue"
-                                  withParams:@{@"video":[video valueForKeyPath:@"id"]}
+                                  withParams:@{@"video":[[video valueForKeyPath:@"id"] description]}
                                   completion:nil];
 }
 
