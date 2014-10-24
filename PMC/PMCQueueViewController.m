@@ -1,9 +1,9 @@
 #import "PMCQueueViewController.h"
 #import "PMCVideoTableViewCell.h"
+#import "PMCHTTPClient.h"
 
 @interface PMCQueueViewController ()
 
-@property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSArray *videos;
 @property (nonatomic, strong) NSDictionary *currentVideo;
 
@@ -14,10 +14,6 @@
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.title = @"Queue";
-
-        NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-        self.session = session;
     }
     return self;
 }
@@ -40,59 +36,38 @@
     __block BOOL refreshedCurrent = NO;
     __block BOOL refreshedVideos = NO;
 
-    NSURLSessionTask *queueTask = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/queue"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSArray *videos = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    [[PMCHTTPClient sharedClient] jsonFrom:@"queue" completion:^(NSArray *videos, NSError *error) {
+        self.videos = videos;
+        refreshedVideos = YES;
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.videos = videos;
-            refreshedVideos = YES;
-
-            if (refreshedCurrent) {
-                [self.tableView reloadData];
-                [sender endRefreshing];
-            }
-        });
+        if (refreshedCurrent) {
+            [self.tableView reloadData];
+            [sender endRefreshing];
+        }
     }];
 
-    NSURLSessionTask *currentTask = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/current"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSDictionary *currentVideo = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    [[PMCHTTPClient sharedClient] jsonFrom:@"current" completion:^(NSArray *videos, NSError *error) {
+        self.videos = videos;
+        refreshedVideos = YES;
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.currentVideo = currentVideo;
-            refreshedCurrent = YES;
-
-            if (refreshedVideos) {
-                [self.tableView reloadData];
-                [sender endRefreshing];
-            }
-        });
+        if (refreshedCurrent) {
+            [self.tableView reloadData];
+            [sender endRefreshing];
+        }
     }];
-
-    [queueTask resume];
-    [currentTask resume];
 }
 
 -(void)clearQueue {
-    NSURL *url = [NSURL URLWithString:@"http://10.0.1.13:5000/queue"];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    request.HTTPMethod = @"DELETE";
     [self.refreshControl beginRefreshing];
-    NSURLSessionTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.videos = @[];
-            [self.tableView reloadData];
-            [self.refreshControl endRefreshing];
-        });
+    [[PMCHTTPClient sharedClient] sendMethod:@"DELETE" toEndpoint:@"queue" completion:^(NSError *error) {
+        self.videos = @[];
+        [self.tableView reloadData];
+        [self.refreshControl endRefreshing];
     }];
-    [task resume];
 }
 
 -(void)dequeueVideo:(NSDictionary *)video {
-    NSURL *url = [NSURL URLWithString:video[@"removePath"] relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    request.HTTPMethod = @"REMOVE";
-    NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
-    [task resume];
+    [[PMCHTTPClient sharedClient] sendMethod:@"REMOVE" toEndpoint:video[@"remotePath"] completion:nil];
 }
 
 #pragma mark - UITableViewDataSource

@@ -34,6 +34,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>PMC_HOST</key>
+	<string>http://10.0.1.13:5000</string>
+	<key>PMC_USERNAME</key>
+	<string></string>
+	<key>PMC_PASSWORD</key>
+	<string></string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

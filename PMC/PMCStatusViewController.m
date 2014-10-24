@@ -2,7 +2,6 @@
 
 @interface PMCStatusViewController () <NSURLSessionDataDelegate>
 
-@property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong, readonly) NSString *statusText;
 
 @end
@@ -12,14 +11,6 @@
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.title = @"Status";
-
-        NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-        self.session = session;
-
-        NSURLSessionTask *task = [self.session dataTaskWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/status"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        }];
-        [task resume];
     }
     return self;
 }

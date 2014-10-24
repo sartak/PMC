@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		CB28F3E51984403300EB184A /* PMCSectionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB28F3E41984403300EB184A /* PMCSectionTableViewCell.m */; };
 		CB28F3E71984405200EB184A /* PMCSectionTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB28F3E61984405200EB184A /* PMCSectionTableViewCell.xib */; };
+		CB35204519FAC9A100FA8FD2 /* PMCHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = CB35204419FAC9A100FA8FD2 /* PMCHTTPClient.m */; };
 		CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C369197DCF5000E8077E /* PMCControlsViewController.m */; };
 		CB40C36D197DD06000E8077E /* PMCQueueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB40C36C197DD06000E8077E /* PMCQueueViewController.m */; };
 		CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */; };
@@ -28,6 +29,8 @@
 		CB28F3E31984403300EB184A /* PMCSectionTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCSectionTableViewCell.h; sourceTree = "<group>"; };
 		CB28F3E41984403300EB184A /* PMCSectionTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCSectionTableViewCell.m; sourceTree = "<group>"; };
 		CB28F3E61984405200EB184A /* PMCSectionTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCSectionTableViewCell.xib; sourceTree = "<group>"; };
+		CB35204319FAC9A100FA8FD2 /* PMCHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCHTTPClient.h; sourceTree = "<group>"; };
+		CB35204419FAC9A100FA8FD2 /* PMCHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCHTTPClient.m; sourceTree = "<group>"; };
 		CB40C368197DCF5000E8077E /* PMCControlsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCControlsViewController.h; sourceTree = "<group>"; };
 		CB40C369197DCF5000E8077E /* PMCControlsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCControlsViewController.m; sourceTree = "<group>"; };
 		CB40C36B197DD06000E8077E /* PMCQueueViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCQueueViewController.h; sourceTree = "<group>"; };
@@ -85,6 +88,8 @@
 			children = (
 				CB58075F194E876200DF387D /* PMCAppDelegate.h */,
 				CB580760194E876200DF387D /* PMCAppDelegate.m */,
+				CB35204319FAC9A100FA8FD2 /* PMCHTTPClient.h */,
+				CB35204419FAC9A100FA8FD2 /* PMCHTTPClient.m */,
 				CB40C368197DCF5000E8077E /* PMCControlsViewController.h */,
 				CB40C369197DCF5000E8077E /* PMCControlsViewController.m */,
 				CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */,
@@ -193,6 +198,7 @@
 				CB47835819E8CABD006D8E51 /* PMCSummaryTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */,
+				CB35204519FAC9A100FA8FD2 /* PMCHTTPClient.m in Sources */,
 				CB28F3E51984403300EB184A /* PMCSectionTableViewCell.m in Sources */,
 				CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */,
 				CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */,
@@ -294,6 +300,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PMC/PMC-Prefix.pch";
 				INFOPLIST_FILE = "PMC/PMC-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -307,6 +314,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PMC/PMC-Prefix.pch";
 				INFOPLIST_FILE = "PMC/PMC-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

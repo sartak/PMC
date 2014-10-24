@@ -2,6 +2,7 @@
 #import "PMCVideoTableViewCell.h"
 #import "PMCSectionTableViewCell.h"
 #import "PMCSummaryTableViewCell.h"
+#import "PMCHTTPClient.h"
 
 @import MediaPlayer;
 
@@ -11,7 +12,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
 @property (nonatomic, strong) NSDictionary *currentRecord;
 @property (nonatomic, strong) NSArray *records;
-@property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong, readonly) NSString *requestPath;
 @property (nonatomic, strong) NSString *currentLanguage;
 @property (nonatomic) int totalDuration;
@@ -27,10 +27,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
         self.currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
         self.currentRecord = record;
-
-        NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-        self.session = session;
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(languageDidChange:) name:PMCLanguageDidChangeNotification object:nil];
     }
@@ -129,26 +125,17 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 }
 
 -(void)refreshRecords:(UIRefreshControl *)sender {
-    NSURL *url = [NSURL URLWithString:self.requestPath relativeToURL:[NSURL URLWithString:@"http://10.0.1.13:5000/"]];
-    NSURLSessionTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSArray *records = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.records = records;
-            [sender endRefreshing];
-        });
+    [[PMCHTTPClient sharedClient] jsonFrom:self.requestPath completion:^(NSArray *records, NSError *error) {
+        self.records = records;
+        [sender endRefreshing];
     }];
-    [task resume];
 }
 
 -(void)enqueueVideo:(NSDictionary *)video {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://10.0.1.13:5000/queue"]];
-    request.HTTPMethod = @"POST";
-    NSString *params = [NSString stringWithFormat:@"video=%@", [video valueForKeyPath:@"id"]];
-    request.HTTPBody = [params dataUsingEncoding:NSUTF8StringEncoding];
-
-    NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
-    [task resume];
+    [[PMCHTTPClient sharedClient] sendMethod:@"POST"
+                                  toEndpoint:@"/queue"
+                                  withParams:@{@"video":[video valueForKeyPath:@"id"]}
+                                  completion:nil];
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
