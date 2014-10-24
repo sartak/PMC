@@ -92,6 +92,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(refreshRecords:) forControlEvents:UIControlEventValueChanged];
 
+    self.tableView.rowHeight = 44;
+
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCSectionTableViewCell" bundle:nil] forCellReuseIdentifier:@"Section"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCSummaryTableViewCell" bundle:nil] forCellReuseIdentifier:@"Summary"];
