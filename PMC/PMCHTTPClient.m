@@ -43,7 +43,7 @@
 }
 
 -(void)sendMethod:(NSString *)method toEndpoint:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(NSError *error))completion {
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", [self host], endpoint]];
+    NSURL *url = [NSURL URLWithString:endpoint relativeToURL:[NSURL URLWithString:[self host]]];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request addValue:[self username] forHTTPHeaderField:@"X-PMC-Username"];
@@ -71,7 +71,7 @@
 }
 
 -(void)jsonFrom:(NSString *)endpoint completion:(void (^)(id json, NSError *error))completion {
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", [self host], endpoint]];
+    NSURL *url = [NSURL URLWithString:endpoint relativeToURL:[NSURL URLWithString:[self host]]];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request addValue:[self username] forHTTPHeaderField:@"X-PMC-Username"];
