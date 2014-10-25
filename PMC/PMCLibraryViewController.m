@@ -308,8 +308,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
     if (record[@"requestPath"]) {
-        NSLog(@"%@", record[@"requestPath"]);
-
         PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"] forRecord:record];
         next.currentLanguage = self.currentLanguage;
 

@@ -1,0 +1,3 @@
+@interface PMCFiveStarTableViewCell : UITableViewCell
+
+@end

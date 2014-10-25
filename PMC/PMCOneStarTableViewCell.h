@@ -1,0 +1,3 @@
+@interface PMCOneStarTableViewCell : UITableViewCell
+
+@end
