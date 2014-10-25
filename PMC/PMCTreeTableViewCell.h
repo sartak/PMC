@@ -1,4 +1,4 @@
-@interface PMCSectionTableViewCell : UITableViewCell
+@interface PMCTreeTableViewCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 

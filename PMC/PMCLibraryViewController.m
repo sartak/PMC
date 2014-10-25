@@ -1,7 +1,10 @@
 #import "PMCLibraryViewController.h"
 #import "PMCVideoTableViewCell.h"
-#import "PMCSectionTableViewCell.h"
+#import "PMCTreeTableViewCell.h"
+#import "PMCTagTableViewCell.h"
 #import "PMCSummaryTableViewCell.h"
+#import "PMCFiveStarTableViewCell.h"
+#import "PMCOneStarTableViewCell.h"
 #import "PMCHTTPClient.h"
 
 @import MediaPlayer;
@@ -55,14 +58,14 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
     for (UITableViewCell *cell in self.tableView.visibleCells) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-        NSDictionary *record = self.records[indexPath.row];
-        if (record[@"requestPath"]) {
-            PMCSectionTableViewCell *sectionCell = (PMCSectionTableViewCell *)cell;
-            sectionCell.titleLabel.text = [self extractLabelFromRecord:record];
+        if (indexPath.section == 0) {
+            NSDictionary *record = self.records[indexPath.row];
+            if ([cell respondsToSelector:@selector(titleLabel)]) {
+                [cell setValue:[self extractLabelFromRecord:record includeSpaceForTag:YES] forKeyPath:@"titleLabel.text"];
+            }
         }
-        else {
-            PMCVideoTableViewCell *videoCell = (PMCVideoTableViewCell *)cell;
-            videoCell.titleLabel.text = [self extractLabelFromRecord:record];
+        else if (indexPath.section == 1) {
+            // localize...
         }
     }
 }
@@ -74,7 +77,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
 -(void)setTitleFromCurrentRecord {
     if (self.currentRecord) {
-        self.title = [self extractLabelFromRecord:self.currentRecord];
+        self.title = [self extractLabelFromRecord:self.currentRecord includeSpaceForTag:NO];
     }
     else {
         if ([self.currentLanguage isEqualToString:@"ja"]) {
@@ -95,7 +98,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     self.tableView.rowHeight = 44;
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
-    [self.tableView registerNib:[UINib nibWithNibName:@"PMCSectionTableViewCell" bundle:nil] forCellReuseIdentifier:@"Section"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCTreeTableViewCell" bundle:nil] forCellReuseIdentifier:@"Tree"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCTagTableViewCell" bundle:nil] forCellReuseIdentifier:@"Tag"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCFiveStarTableViewCell" bundle:nil] forCellReuseIdentifier:@"★★★★★"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCOneStarTableViewCell" bundle:nil] forCellReuseIdentifier:@"★☆☆☆☆"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCSummaryTableViewCell" bundle:nil] forCellReuseIdentifier:@"Summary"];
 
     [self.refreshControl beginRefreshing];
@@ -143,7 +149,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [self extractLabelFromRecord:video];
+    cell.titleLabel.text = [self extractLabelFromRecord:video includeSpaceForTag:YES];
 
     id identifier = [video valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
@@ -188,12 +194,17 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     return cell;
 }
 
--(NSString *)extractLabelFromRecord:(NSDictionary *)record {
+-(NSString *)extractLabelFromRecord:(NSDictionary *)record includeSpaceForTag:(BOOL)extraSpace {
     for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
         NSString *keyPath = [@"label." stringByAppendingString:lang];
         id label = [record valueForKeyPath:keyPath];
         if (label && label != [NSNull null]) {
-            return label;
+            if (extraSpace && [record[@"type"] isEqualToString:@"tag"]) {
+                return [NSString stringWithFormat:@"  %@  ", label];
+            }
+            else {
+                return label;
+            }
         }
     }
 
@@ -226,13 +237,23 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     return cell;
 }
 
--(UITableViewCell *)tableView:(UITableView *)tableView cellForSection:(NSDictionary *)section atIndexPath:(NSIndexPath *)indexPath {
-    PMCSectionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Section" forIndexPath:indexPath];
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForTree:(NSDictionary *)tree atIndexPath:(NSIndexPath *)indexPath {
+    PMCTreeTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Tree" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [self extractLabelFromRecord:section];
+    cell.titleLabel.text = [self extractLabelFromRecord:tree includeSpaceForTag:YES];
 
     return cell;
 }
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForTag:(NSDictionary *)tag atIndexPath:(NSIndexPath *)indexPath {
+    PMCTagTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Tag" forIndexPath:indexPath];
+
+    cell.titleLabel.text = [self extractLabelFromRecord:tag includeSpaceForTag:YES];
+    cell.titleLabel.layer.cornerRadius = 8;
+
+    return cell;
+}
+
 
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -260,8 +281,16 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     NSDictionary *record = self.records[indexPath.row];
 
     if (indexPath.section == 0) {
-        if (record[@"requestPath"]) {
-            return [self tableView:tableView cellForSection:record atIndexPath:indexPath];
+        if ([record[@"type"] isEqualToString:@"tree"]) {
+            return [self tableView:tableView cellForTree:record atIndexPath:indexPath];
+        }
+        else if ([record[@"type"] isEqualToString:@"tag"]) {
+            if ([record[@"id"] isEqualToString:@"★★★★★"] || [record[@"id"] isEqualToString:@"★☆☆☆☆"]) {
+                return [tableView dequeueReusableCellWithIdentifier:record[@"id"] forIndexPath:indexPath];
+            }
+            else {
+                return [self tableView:tableView cellForTag:record atIndexPath:indexPath];
+            }
         }
         else {
             return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];
@@ -279,6 +308,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
     if (record[@"requestPath"]) {
+        NSLog(@"%@", record[@"requestPath"]);
+
         PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"] forRecord:record];
         next.currentLanguage = self.currentLanguage;
 

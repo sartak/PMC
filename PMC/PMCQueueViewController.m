@@ -69,7 +69,7 @@
 }
 
 -(void)dequeueVideo:(NSDictionary *)video {
-    [[PMCHTTPClient sharedClient] sendMethod:@"REMOVE" toEndpoint:video[@"remotePath"] completion:nil];
+    [[PMCHTTPClient sharedClient] sendMethod:@"REMOVE" toEndpoint:video[@"removePath"] completion:nil];
 }
 
 #pragma mark - UITableViewDataSource
