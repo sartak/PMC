@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6250" systemVersion="13F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6751" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6244"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
         <capability name="Alignment constraints to the first baseline" minToolsVersion="6.0"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="detailButton" indentationWidth="10" id="U9T-4m-PDE" customClass="PMCVideoTableViewCell">
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="U9T-4m-PDE" customClass="PMCVideoTableViewCell">
             <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="U9T-4m-PDE" id="oVa-60-nx9">
@@ -21,16 +21,10 @@
                         <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cCd-Nb-Eg8">
-                        <rect key="frame" x="163" y="22" width="110" height="21"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
-                        <nil key="highlightedColor"/>
-                    </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vl2-IR-Ubf">
-                        <rect key="frame" x="20" y="22" width="135" height="21"/>
+                        <rect key="frame" x="20" y="22" width="174" height="21"/>
                         <constraints>
-                            <constraint firstAttribute="width" constant="135" id="aPb-jO-1gG"/>
+                            <constraint firstAttribute="width" constant="174" id="teS-SS-wBM"/>
                         </constraints>
                         <fontDescription key="fontDescription" type="system" pointSize="13"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
@@ -44,21 +38,27 @@
                             <constraint firstAttribute="width" constant="8" id="hEI-oN-d1G"/>
                         </constraints>
                     </imageView>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cCd-Nb-Eg8">
+                        <rect key="frame" x="202" y="22" width="110" height="21"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="1XM-32-s1x" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="-2" id="0iG-0l-7dO"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="Vl2-IR-Ubf" secondAttribute="bottom" constant="-7.5" id="6Zc-Dz-ALK"/>
-                    <constraint firstItem="Vl2-IR-Ubf" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="14" id="6xE-Yc-pdF"/>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="trailing" secondItem="1XM-32-s1x" secondAttribute="trailing" id="8to-g2-a5c"/>
-                    <constraint firstAttribute="trailing" secondItem="1XM-32-s1x" secondAttribute="trailing" id="AHj-0G-Ryu"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="1XM-32-s1x" secondAttribute="bottom" constant="8.5" id="K8U-kI-X2A"/>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="baseline" secondItem="Vl2-IR-Ubf" secondAttribute="baseline" id="KeX-JD-HnZ"/>
-                    <constraint firstItem="Vl2-IR-Ubf" firstAttribute="leading" secondItem="1XM-32-s1x" secondAttribute="leading" id="SwP-PK-Jwh"/>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="firstBaseline" secondItem="Vl2-IR-Ubf" secondAttribute="firstBaseline" id="a4T-jm-VYr"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="firstBaseline" secondItem="Vl2-IR-Ubf" secondAttribute="firstBaseline" id="3Ic-j2-M6w"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="baseline" secondItem="Vl2-IR-Ubf" secondAttribute="baseline" id="FIg-9W-P9l"/>
+                    <constraint firstItem="1XM-32-s1x" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="-2" id="L96-Z2-7yd"/>
+                    <constraint firstItem="1XM-32-s1x" firstAttribute="leading" secondItem="HXR-yC-pXS" secondAttribute="trailing" constant="8" symbolic="YES" id="OOj-Qi-yfp"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="Vl2-IR-Ubf" secondAttribute="bottom" constant="-7.5" id="Tea-UA-1xm"/>
+                    <constraint firstItem="1XM-32-s1x" firstAttribute="leading" secondItem="Vl2-IR-Ubf" secondAttribute="leading" id="YD7-mJ-bok"/>
+                    <constraint firstItem="Vl2-IR-Ubf" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="14" id="a6w-Ut-Vqb"/>
                     <constraint firstItem="HXR-yC-pXS" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="-4" id="fU1-Bt-L45"/>
-                    <constraint firstItem="1XM-32-s1x" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="12" id="hBb-h8-fbJ"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="1XM-32-s1x" secondAttribute="trailing" constant="39" id="kto-Y5-sKK"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="1XM-32-s1x" secondAttribute="bottom" constant="8.5" id="okb-hj-bh4"/>
                     <constraint firstItem="HXR-yC-pXS" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="10" id="rce-80-2hd"/>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="leading" secondItem="Vl2-IR-Ubf" secondAttribute="trailing" constant="8" symbolic="YES" id="ymJ-5R-GH2"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="leading" secondItem="Vl2-IR-Ubf" secondAttribute="trailing" constant="8" symbolic="YES" id="rmI-9J-0Wv"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="trailing" secondItem="oVa-60-nx9" secondAttribute="trailingMargin" id="xeu-Zq-JAo"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>

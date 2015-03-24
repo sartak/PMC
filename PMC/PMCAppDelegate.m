@@ -3,6 +3,14 @@
 #import "PMCControlsViewController.h"
 #import "PMCQueueViewController.h"
 #import "PMCStatusViewController.h"
+#import "PMCHTTPClient.h"
+
+@interface PMCAppDelegate ()
+
+@property (nonatomic, strong) UINavigationController *libraryNav;
+@property (nonatomic, strong) PMCLibraryViewController *libraryRoot;
+
+@end
 
 @implementation PMCAppDelegate
 
@@ -17,6 +25,8 @@
     PMCLibraryViewController *library = [[PMCLibraryViewController alloc] initWithRequestPath:@"/library" forRecord:nil];
     library.tabBarItem.image = [UIImage imageNamed:@"Albums"];
     UINavigationController *libraryNav = [[UINavigationController alloc] initWithRootViewController:library];
+    self.libraryNav = libraryNav;
+    self.libraryRoot = library;
 
     PMCQueueViewController *queue = [[PMCQueueViewController alloc] init];
     queue.tabBarItem.image = [UIImage imageNamed:@"Playlist"];
@@ -33,7 +43,16 @@
     self.window.rootViewController = tabVC;
 
     [self.window makeKeyAndVisible];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
+
     return YES;
+}
+
+-(void)hostDidChange:(NSNotification *)notification {
+    [self.libraryNav popToRootViewControllerAnimated:NO];
+    [self.libraryRoot refreshRecords];
+    self.libraryRoot.title = [PMCHTTPClient sharedClient].currentLocation[@"label"];
 }
 
 @end

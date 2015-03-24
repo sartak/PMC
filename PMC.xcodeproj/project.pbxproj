@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB031ABB1AB66B2E00A52927 /* PMCGameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB031AB91AB66B2E00A52927 /* PMCGameTableViewCell.m */; };
+		CB031ABC1AB66B2E00A52927 /* PMCGameTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB031ABA1AB66B2E00A52927 /* PMCGameTableViewCell.xib */; };
 		CB24721619FB37EB00D9FE0D /* PMCTagTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB24721419FB37EB00D9FE0D /* PMCTagTableViewCell.m */; };
 		CB24721719FB37EB00D9FE0D /* PMCTagTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB24721519FB37EB00D9FE0D /* PMCTagTableViewCell.xib */; };
 		CB24721B19FB407200D9FE0D /* PMCFiveStarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB24721919FB407200D9FE0D /* PMCFiveStarTableViewCell.m */; };
@@ -32,6 +34,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CB031AB81AB66B2E00A52927 /* PMCGameTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCGameTableViewCell.h; sourceTree = "<group>"; };
+		CB031AB91AB66B2E00A52927 /* PMCGameTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCGameTableViewCell.m; sourceTree = "<group>"; };
+		CB031ABA1AB66B2E00A52927 /* PMCGameTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCGameTableViewCell.xib; sourceTree = "<group>"; };
 		CB24721319FB37EB00D9FE0D /* PMCTagTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCTagTableViewCell.h; sourceTree = "<group>"; };
 		CB24721419FB37EB00D9FE0D /* PMCTagTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCTagTableViewCell.m; sourceTree = "<group>"; };
 		CB24721519FB37EB00D9FE0D /* PMCTagTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCTagTableViewCell.xib; sourceTree = "<group>"; };
@@ -117,6 +122,9 @@
 				CBE7FAD6194E8D6200311B7E /* PMCVideoTableViewCell.h */,
 				CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */,
 				CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */,
+				CB031AB81AB66B2E00A52927 /* PMCGameTableViewCell.h */,
+				CB031AB91AB66B2E00A52927 /* PMCGameTableViewCell.m */,
+				CB031ABA1AB66B2E00A52927 /* PMCGameTableViewCell.xib */,
 				CB28F3E31984403300EB184A /* PMCTreeTableViewCell.h */,
 				CB28F3E41984403300EB184A /* PMCTreeTableViewCell.m */,
 				CB28F3E61984405200EB184A /* PMCTreeTableViewCell.xib */,
@@ -178,6 +186,11 @@
 				CLASSPREFIX = PMC;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = RPGlanguage;
+				TargetAttributes = {
+					CB58074C194E876200DF387D = {
+						DevelopmentTeam = MWNU43S3CB;
+					};
+				};
 			};
 			buildConfigurationList = CB580748194E876200DF387D /* Build configuration list for PBXProject "PMC" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -209,6 +222,7 @@
 				CB24722119FB407D00D9FE0D /* PMCOneStarTableViewCell.xib in Resources */,
 				CB28F3E71984405200EB184A /* PMCTreeTableViewCell.xib in Resources */,
 				CB24721719FB37EB00D9FE0D /* PMCTagTableViewCell.xib in Resources */,
+				CB031ABC1AB66B2E00A52927 /* PMCGameTableViewCell.xib in Resources */,
 				CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -224,6 +238,7 @@
 				CB40C372197DDA2D00E8077E /* PMCStatusViewController.m in Sources */,
 				CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */,
 				CB47835819E8CABD006D8E51 /* PMCSummaryTableViewCell.m in Sources */,
+				CB031ABB1AB66B2E00A52927 /* PMCGameTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB24721B19FB407200D9FE0D /* PMCFiveStarTableViewCell.m in Sources */,
 				CB24721619FB37EB00D9FE0D /* PMCTagTableViewCell.m in Sources */,
@@ -327,11 +342,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PMC/PMC-Prefix.pch";
 				INFOPLIST_FILE = "PMC/PMC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -341,11 +359,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PMC/PMC-Prefix.pch";
 				INFOPLIST_FILE = "PMC/PMC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

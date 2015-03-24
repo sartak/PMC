@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6250" systemVersion="13F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6751" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6244"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
@@ -15,16 +15,13 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LLX-QA-bQP">
-                        <rect key="frame" x="8" y="8" width="304" height="21"/>
+                        <rect key="frame" x="8" y="4" width="304" height="21"/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aCR-7O-Hor">
-                        <rect key="frame" x="163" y="22" width="110" height="21"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="110" id="qfG-qI-OUc"/>
-                        </constraints>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aCR-7O-Hor">
+                        <rect key="frame" x="8" y="25" width="304" height="21"/>
                         <fontDescription key="fontDescription" type="system" pointSize="13"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
@@ -32,11 +29,12 @@
                 </subviews>
                 <constraints>
                     <constraint firstItem="LLX-QA-bQP" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="Ipf-hf-nlA"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="aCR-7O-Hor" secondAttribute="trailing" constant="39" id="l1b-OM-NxS"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="LLX-QA-bQP" secondAttribute="bottom" constant="6.5" id="mME-Ob-TIw"/>
-                    <constraint firstItem="aCR-7O-Hor" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="14" id="mcv-5k-TF2"/>
-                    <constraint firstItem="LLX-QA-bQP" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="nId-pF-wa2"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="aCR-7O-Hor" secondAttribute="bottom" constant="-7.5" id="xMM-XT-aPf"/>
+                    <constraint firstItem="aCR-7O-Hor" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="Mjo-gj-1jl"/>
+                    <constraint firstItem="aCR-7O-Hor" firstAttribute="top" secondItem="LLX-QA-bQP" secondAttribute="bottom" id="hTG-UL-1bK"/>
+                    <constraint firstItem="aCR-7O-Hor" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="ieT-xD-fov"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="LLX-QA-bQP" secondAttribute="bottom" constant="11" id="mME-Ob-TIw"/>
+                    <constraint firstItem="LLX-QA-bQP" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-4" id="nId-pF-wa2"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="aCR-7O-Hor" secondAttribute="bottom" constant="-10" id="wcy-Bm-QEn"/>
                     <constraint firstItem="LLX-QA-bQP" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="xk5-ge-Vii"/>
                 </constraints>
             </tableViewCellContentView>

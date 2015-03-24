@@ -1,11 +1,12 @@
 #import "PMCQueueViewController.h"
 #import "PMCVideoTableViewCell.h"
+#import "PMCGameTableViewCell.h"
 #import "PMCHTTPClient.h"
 
 @interface PMCQueueViewController ()
 
-@property (nonatomic, strong) NSArray *videos;
-@property (nonatomic, strong) NSDictionary *currentVideo;
+@property (nonatomic, strong) NSArray *media;
+@property (nonatomic, strong) NSDictionary *currentMedia;
 
 @end
 
@@ -14,6 +15,7 @@
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.title = @"Queue";
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
     }
     return self;
 }
@@ -22,25 +24,26 @@
     [super loadView];
 
     self.refreshControl = [[UIRefreshControl alloc] init];
-    [self.refreshControl addTarget:self action:@selector(refreshVideos:) forControlEvents:UIControlEventValueChanged];
+    [self.refreshControl addTarget:self action:@selector(refreshMedia:) forControlEvents:UIControlEventValueChanged];
 
     self.tableView.rowHeight = 44;
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCGameTableViewCell" bundle:nil] forCellReuseIdentifier:@"Game"];
 
     [self.refreshControl beginRefreshing];
-    [self refreshVideos:self.refreshControl];
+    [self refreshMedia:self.refreshControl];
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Clear" style:UIBarButtonItemStylePlain target:self action:@selector(clearQueue)];
 }
 
--(void)refreshVideos:(UIRefreshControl *)sender {
+-(void)refreshMedia:(UIRefreshControl *)sender {
     __block BOOL refreshedCurrent = NO;
-    __block BOOL refreshedVideos = NO;
+    __block BOOL refreshedMedia = NO;
 
-    [[PMCHTTPClient sharedClient] jsonFrom:@"/queue" completion:^(NSArray *videos, NSError *error) {
-        self.videos = videos;
-        refreshedVideos = YES;
+    [[PMCHTTPClient sharedClient] jsonFrom:@"/queue" completion:^(NSArray *media, NSError *error) {
+        self.media = media;
+        refreshedMedia = YES;
 
         if (refreshedCurrent) {
             [self.tableView reloadData];
@@ -48,11 +51,11 @@
         }
     }];
 
-    [[PMCHTTPClient sharedClient] jsonFrom:@"/current" completion:^(NSDictionary *currentVideo, NSError *error) {
-        self.currentVideo = currentVideo;
+    [[PMCHTTPClient sharedClient] jsonFrom:@"/current" completion:^(NSDictionary *currentMedia, NSError *error) {
+        self.currentMedia = currentMedia;
         refreshedCurrent = YES;
 
-        if (refreshedVideos) {
+        if (refreshedMedia) {
             [self.tableView reloadData];
             [sender endRefreshing];
         }
@@ -62,14 +65,14 @@
 -(void)clearQueue {
     [self.refreshControl beginRefreshing];
     [[PMCHTTPClient sharedClient] sendMethod:@"DELETE" toEndpoint:@"/queue" completion:^(NSError *error) {
-        self.videos = @[];
+        self.media = @[];
         [self.tableView reloadData];
         [self.refreshControl endRefreshing];
     }];
 }
 
--(void)dequeueVideo:(NSDictionary *)video {
-    [[PMCHTTPClient sharedClient] sendMethod:@"REMOVE" toEndpoint:video[@"removePath"] completion:nil];
+-(void)dequeueMedia:(NSDictionary *)media {
+    [[PMCHTTPClient sharedClient] sendMethod:@"REMOVE" toEndpoint:media[@"removePath"] completion:nil];
 }
 
 #pragma mark - UITableViewDataSource
@@ -83,29 +86,60 @@
         return 1;
     }
     else {
-        return self.videos.count;
+        return self.media.count;
     }
 }
 
--(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
-    NSDictionary *video;
-    BOOL isCurrent = NO;
+-(NSString *)currentLanguage { return @"xxx"; }
 
+-(NSString *)extractLabelFromRecord:(NSDictionary *)record includeSpaceForTag:(BOOL)extraSpace {
+    for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
+        NSString *keyPath = [@"label." stringByAppendingString:lang];
+        id label = [record valueForKeyPath:keyPath];
+        if (label && label != [NSNull null]) {
+            if (extraSpace && [record[@"type"] isEqualToString:@"tag"]) {
+                return [NSString stringWithFormat:@"  %@  ", label];
+            }
+            else {
+                return label;
+            }
+        }
+    }
+
+    return nil;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSDictionary *record;
+    BOOL isCurrent = NO;
     if (indexPath.section == 0) {
-        video = self.currentVideo;
+        record = self.currentMedia;
         isCurrent = YES;
     }
     else {
-        video = self.videos[indexPath.row];
+        record = self.media[indexPath.row];
     }
 
-    id label = [video valueForKeyPath:@"label.ja"];
-    if (!label || label == [NSNull null]) {
-        label = [video valueForKeyPath:@"label.en"];
+    if (!record) {
+        return [self tableView:tableView cellForVideo:record atIndexPath:indexPath isCurrent:isCurrent];
     }
+    else if ([record[@"type"] isEqualToString:@"video"]) {
+        return [self tableView:tableView cellForVideo:record atIndexPath:indexPath isCurrent:isCurrent];
+    }
+    else if ([record[@"type"] isEqualToString:@"game"]) {
+        return [self tableView:tableView cellForGame:record atIndexPath:indexPath isCurrent:isCurrent];
+    }
+    else {
+        NSLog(@"invalid type %@ for indexPath %@/%@", record[@"type"], @(indexPath.section), @(indexPath.row));
+        NSLog(@"%@", record);
+        return nil;
+    }
+}
 
-    cell.titleLabel.text = label;
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath isCurrent:(BOOL)isCurrent {
+    PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
+
+    cell.titleLabel.text = [self extractLabelFromRecord:video includeSpaceForTag:YES];
 
     id identifier = [video valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
@@ -115,9 +149,8 @@
         cell.identifierLabel.text = identifier;
     }
 
-
     id duration = [video valueForKeyPath:@"duration_seconds"];
-    if (!duration || duration == [NSNull null]) {
+    if (!duration || duration == [NSNull null] || [duration intValue] == 0) {
         cell.durationLabel.text = @"";
     }
     else {
@@ -141,33 +174,103 @@
     if (isCurrent) {
         cell.backgroundColor = [UIColor colorWithWhite:0.95f alpha:1];
     }
-    else if ([[video valueForKeyPath:@"watched"] isEqual:[NSNull null]]) {
+    else if (![[video valueForKeyPath:@"streamable"] boolValue]) {
+        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
+    }
+    else if ([[video valueForKeyPath:@"completed"] isEqual:[NSNull null]]) {
         cell.backgroundColor = [UIColor whiteColor];
     }
     else {
-        cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:.22f brightness:1 alpha:1];
+        NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:[[video valueForKeyPath:@"last_played"] intValue]];
+        NSTimeInterval since = [[NSDate date] timeIntervalSinceDate:lastPlayed];
+        double percent = since / (365*24*60*60.);
+        double saturation = .33 * (1-percent);
+
+        cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];
     }
 
     return cell;
 }
 
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForGame:(NSDictionary *)game atIndexPath:(NSIndexPath *)indexPath isCurrent:(BOOL)isCurrent {
+    PMCGameTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Game" forIndexPath:indexPath];
+
+    cell.titleLabel.text = [self extractLabelFromRecord:game includeSpaceForTag:YES];
+
+    id identifier = [game valueForKeyPath:@"identifier"];
+    if (!identifier || identifier == [NSNull null]) {
+        cell.identifierLabel.text = @"";
+    }
+    else {
+        cell.identifierLabel.text = identifier;
+    }
+
+    id duration = [game valueForKeyPath:@"playtime"];
+    if (!duration || duration == [NSNull null] || [duration intValue] == 0) {
+        cell.playtimeLabel.text = @"";
+    }
+    else {
+        int seconds = [duration intValue];
+        int minutes = seconds / 60;
+        seconds %= 60;
+        int hours = minutes / 60;
+        minutes %= 60;
+
+        if (hours) {
+            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dh %2dm %ds", hours, minutes, seconds];
+        }
+        else {
+            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dm %ds", minutes, seconds];
+        }
+    }
+
+    if (isCurrent) {
+        cell.backgroundColor = [UIColor colorWithWhite:0.95f alpha:1];
+    }
+    else if (![[game valueForKeyPath:@"streamable"] boolValue]) {
+        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
+    }
+    else if ([[game valueForKeyPath:@"completed"] isEqual:[NSNull null]]) {
+        cell.backgroundColor = [UIColor whiteColor];
+    }
+    else {
+        cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:.22f brightness:1 alpha:1];
+    }
+    
+    return cell;
+}
+
+-(void)hostDidChange:(NSNotification *)notification {
+    [self.refreshControl beginRefreshing];
+    [self refreshMedia:self.refreshControl];
+}
+
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 #pragma mark - UITableViewDelegate
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *video = self.videos[indexPath.row];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if (video[@"removePath"]) {
-        [self dequeueVideo:video];
+    if (indexPath.section == 0) {
+        return;
+    }
 
-        NSMutableArray *newVideos = [NSMutableArray array];
-        for (NSDictionary *v in self.videos) {
-            if (v != video) {
-                [newVideos addObject:v];
+    NSDictionary *media = self.media[indexPath.row];
+
+    if (media[@"removePath"]) {
+        [self dequeueMedia:media];
+
+        NSMutableArray *newMedia = [NSMutableArray array];
+        for (NSDictionary *m in self.media) {
+            if (m != media) {
+                [newMedia addObject:m];
             }
         }
 
-        self.videos = [newVideos copy];
+        self.media = [newMedia copy];
         [tableView reloadData];
     }
 }

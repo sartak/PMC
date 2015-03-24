@@ -1,5 +1,6 @@
 #import "PMCLibraryViewController.h"
 #import "PMCVideoTableViewCell.h"
+#import "PMCGameTableViewCell.h"
 #import "PMCTreeTableViewCell.h"
 #import "PMCTagTableViewCell.h"
 #import "PMCSummaryTableViewCell.h"
@@ -19,6 +20,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 @property (nonatomic, strong) NSString *currentLanguage;
 @property (nonatomic) int totalDuration;
 @property (nonatomic) int totalVideos;
+@property (nonatomic) int totalPlaytime;
+@property (nonatomic) int totalGames;
 
 @end
 
@@ -80,12 +83,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         self.title = [self extractLabelFromRecord:self.currentRecord includeSpaceForTag:NO];
     }
     else {
-        if ([self.currentLanguage isEqualToString:@"ja"]) {
-            self.title = @"ライブラリ";
-        }
-        else {
-            self.title = @"Library";
-        }
+        self.title = [PMCHTTPClient sharedClient].currentLocation[@"label"];
     }
 }
 
@@ -98,6 +96,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     self.tableView.rowHeight = 44;
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"PMCGameTableViewCell" bundle:nil] forCellReuseIdentifier:@"Game"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCTreeTableViewCell" bundle:nil] forCellReuseIdentifier:@"Tree"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCTagTableViewCell" bundle:nil] forCellReuseIdentifier:@"Tag"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCFiveStarTableViewCell" bundle:nil] forCellReuseIdentifier:@"★★★★★"];
@@ -117,9 +116,11 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
     self.totalDuration = 0;
     self.totalVideos = 0;
+    self.totalPlaytime = 0;
+    self.totalGames = 0;
 
     for (NSDictionary *record in records) {
-        if (!record[@"requestPath"]) {
+        if ([record[@"type"] isEqualToString:@"video"]) {
             self.totalVideos++;
 
             id duration = [record valueForKeyPath:@"duration_seconds"];
@@ -127,9 +128,23 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
                 self.totalDuration += [duration intValue];
             }
         }
+        else if ([record[@"type"] isEqualToString:@"game"]) {
+            self.totalGames++;
+
+            id duration = [record valueForKeyPath:@"playtime"];
+            if (duration && duration != [NSNull null]) {
+                self.totalPlaytime += [duration intValue];
+            }
+        }
+
     }
 
     [self.tableView reloadData];
+}
+
+-(void)refreshRecords {
+    [self.refreshControl beginRefreshing];
+    [self refreshRecords:self.refreshControl];
 }
 
 -(void)refreshRecords:(UIRefreshControl *)sender {
@@ -139,10 +154,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }];
 }
 
--(void)enqueueVideo:(NSDictionary *)video {
+-(void)enqueueMedia:(NSDictionary *)media {
     [[PMCHTTPClient sharedClient] sendMethod:@"POST"
                                   toEndpoint:@"/queue"
-                                  withParams:@{@"video":[[video valueForKeyPath:@"id"] description]}
+                                  withParams:@{@"media":[[media valueForKeyPath:@"id"] description]}
                                   completion:nil];
 }
 
@@ -160,7 +175,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 
     id duration = [video valueForKeyPath:@"duration_seconds"];
-    if (!duration || duration == [NSNull null]) {
+    if (!duration || duration == [NSNull null] || [duration intValue] == 0) {
         cell.durationLabel.text = @"";
     }
     else {
@@ -184,13 +199,63 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     if (![[video valueForKeyPath:@"streamable"] boolValue]) {
         cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
     }
-    else if ([[video valueForKeyPath:@"watched"] isEqual:[NSNull null]]) {
+    else if ([[video valueForKeyPath:@"completed"] isEqual:[NSNull null]]) {
+        cell.backgroundColor = [UIColor whiteColor];
+    }
+    else {
+        NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:[[video valueForKeyPath:@"last_played"] intValue]];
+        NSTimeInterval since = [[NSDate date] timeIntervalSinceDate:lastPlayed];
+        double percent = since / (365*24*60*60.);
+        double saturation = .33 * (1-percent);
+
+        cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];
+    }
+
+    return cell;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForGame:(NSDictionary *)game atIndexPath:(NSIndexPath *)indexPath {
+    PMCGameTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Game" forIndexPath:indexPath];
+
+    cell.titleLabel.text = [self extractLabelFromRecord:game includeSpaceForTag:YES];
+
+    id identifier = [game valueForKeyPath:@"identifier"];
+    if (!identifier || identifier == [NSNull null]) {
+        cell.identifierLabel.text = @"";
+    }
+    else {
+        cell.identifierLabel.text = identifier;
+    }
+
+    id duration = [game valueForKeyPath:@"playtime"];
+    if (!duration || duration == [NSNull null] || [duration intValue] == 0) {
+        cell.playtimeLabel.text = @"";
+    }
+    else {
+        int seconds = [duration intValue];
+        int minutes = seconds / 60;
+        seconds %= 60;
+        int hours = minutes / 60;
+        minutes %= 60;
+
+        if (hours) {
+            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dh %2dm %ds", hours, minutes, seconds];
+        }
+        else {
+            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dm %ds", minutes, seconds];
+        }
+    }
+
+    if (![[game valueForKeyPath:@"streamable"] boolValue]) {
+        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
+    }
+    else if ([[game valueForKeyPath:@"completed"] isEqual:[NSNull null]]) {
         cell.backgroundColor = [UIColor whiteColor];
     }
     else {
         cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:.22f brightness:1 alpha:1];
     }
-
+    
     return cell;
 }
 
@@ -211,27 +276,37 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     return nil;
 }
 
--(UITableViewCell *)tableView:(UITableView *)tableView summaryCellAtIndexPath:(NSIndexPath *)indexPath {
+-(UITableViewCell *)tableView:(UITableView *)tableView summaryCellAtIndexPath:(NSIndexPath *)indexPath withCount:(int)count andDuration:(int)duration singular:(NSString *)singular plural:(NSString *)plural serial:(BOOL)serial {
     PMCSummaryTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Summary" forIndexPath:indexPath];
 
-    if (self.totalVideos == 1) {
-        cell.titleLabel.text = @"1 video";
+    if (count == 1) {
+        cell.titleLabel.text = [NSString stringWithFormat:@"1 %@", singular];
     }
     else {
-        cell.titleLabel.text = [NSString stringWithFormat:@"%d videos", self.totalVideos];
+        cell.titleLabel.text = [NSString stringWithFormat:@"%d %@", count, plural];
     }
 
-    int seconds = self.totalDuration;
+    int seconds = duration;
     int minutes = seconds / 60;
     seconds %= 60;
     int hours = minutes / 60;
     minutes %= 60;
 
-    if (hours) {
-        cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d:%02d", hours, minutes, seconds];
+    if (serial) {
+        if (hours) {
+            cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d:%02d", hours, minutes, seconds];
+        }
+        else {
+            cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d", minutes, seconds];
+        }
     }
     else {
-        cell.durationLabel.text = [NSString stringWithFormat:@"%d:%02d", minutes, seconds];
+        if (hours) {
+            cell.durationLabel.text = [NSString stringWithFormat:@"%dh %dm %ds", hours, minutes, seconds];
+        }
+        else {
+            cell.durationLabel.text = [NSString stringWithFormat:@"%dm %ds", minutes, seconds];
+        }
     }
 
     return cell;
@@ -262,7 +337,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 #pragma mark - UITableViewDataSource
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (self.totalVideos > 1) {
+    if (self.totalVideos > 1 || self.totalGames > 1) {
         return 2;
     }
     return 1;
@@ -273,7 +348,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         return self.records.count;
     }
     else {
-        return 1;
+        int rows = 0;
+        if (self.totalVideos > 1) rows++;
+        if (self.totalGames > 1) rows++;
+        return rows;
     }
 }
 
@@ -292,12 +370,26 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
                 return [self tableView:tableView cellForTag:record atIndexPath:indexPath];
             }
         }
-        else {
+        else if ([record[@"type"] isEqualToString:@"video"]) {
             return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];
+        }
+        else if ([record[@"type"] isEqualToString:@"game"]) {
+            return [self tableView:tableView cellForGame:record atIndexPath:indexPath];
+        }
+        else {
+            NSLog(@"invalid type %@", record[@"type"]);
+            // die
+            return nil;
         }
     }
     else {
-        return [self tableView:tableView summaryCellAtIndexPath:indexPath];
+        if (indexPath.row == 0 && self.totalVideos > 1) {
+            // video
+            return [self tableView:tableView summaryCellAtIndexPath:indexPath withCount:self.totalVideos andDuration:self.totalDuration singular:@"video" plural:@"videos" serial:YES];
+        }
+        else {
+            return [self tableView:tableView summaryCellAtIndexPath:indexPath withCount:self.totalGames andDuration:self.totalPlaytime singular:@"game" plural:@"games" serial:NO];
+        }
     }
 }
 
@@ -314,32 +406,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         [self.navigationController pushViewController:next animated:YES];
     }
     else {
-        [self enqueueVideo:record];
+        [self enqueueMedia:record];
     }
 }
-
--(void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *record = self.records[indexPath.row];
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://10.0.1.13:5000/stream?video=%d", [[record valueForKeyPath:@"id"] intValue]]];
-    [[UIApplication sharedApplication] openURL:url];
-
-/*
-    MPMoviePlayerController *moviePlayer = [[MPMoviePlayerController alloc] initWithContentURL:url];
-    [moviePlayer setControlStyle:MPMovieControlStyleDefault];
-    moviePlayer.scalingMode = MPMovieScalingModeAspectFit;
-    [moviePlayer.view setFrame:self.view.bounds];
-    [self.view addSubview: moviePlayer.view];
-    [self.view bringSubviewToFront:moviePlayer.view];
-   // [[NSNotificationCenter defaultCenter] addObserver:self
-   //                                          selector:@selector(moviePlayBackDidFinish:)
-   //                                              name:MPMoviePlayerPlaybackDidFinishNotification
-   //                                            object:moviePlayer];
-    [moviePlayer prepareToPlay];
-    [moviePlayer play];
- */
-}
-
 
 @end

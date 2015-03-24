@@ -1,5 +1,7 @@
 #import "PMCHTTPClient.h"
 
+NSString * const PMCHostDidChangeNotification = @"PMCHostDidChangeNotification";
+
 @interface PMCHTTPClient ()
 
 @property (nonatomic, strong) NSURLSession *session;
@@ -7,6 +9,8 @@
 @end
 
 @implementation PMCHTTPClient
+
+@synthesize currentLocation = _currentLocation;
 
 +(instancetype)sharedClient {
     static dispatch_once_t onceToken;
@@ -26,6 +30,13 @@
     return self;
 }
 
++(NSArray *)locations {
+    return @[
+             @{@"label": @"Living Room", @"host": @"http://pmc.sartak.org" },
+             @{@"label": @"Bedroom", @"host": @"http://pmc2.sartak.org" },
+             ];
+}
+
 -(NSString *)username {
     return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"PMC_USERNAME"];
 }
@@ -34,8 +45,24 @@
     return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"PMC_PASSWORD"];
 }
 
+-(NSDictionary *)currentLocation {
+    if (!_currentLocation) {
+        [self setCurrentLocation:[[self class] locations][0]];
+    }
+    return _currentLocation;
+}
+
+-(void)setCurrentLocation:(NSDictionary *)currentLocation {
+    if ([_currentLocation[@"host"] isEqualToString:currentLocation[@"host"]]) {
+        return;
+    }
+
+    _currentLocation = currentLocation;
+    [[NSNotificationCenter defaultCenter] postNotificationName:PMCHostDidChangeNotification object:self userInfo:@{@"new":currentLocation}];
+}
+
 -(NSString *)host {
-    return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"PMC_HOST"];
+    return self.currentLocation[@"host"];
 }
 
 -(void)sendMethod:(NSString *)method toEndpoint:(NSString *)endpoint completion:(void (^)(NSError *error))completion {
