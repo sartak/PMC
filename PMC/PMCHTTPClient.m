@@ -34,6 +34,7 @@ NSString * const PMCHostDidChangeNotification = @"PMCHostDidChangeNotification";
     return @[
              @{@"label": @"Living Room", @"host": @"http://pmc.sartak.org" },
              @{@"label": @"Bedroom", @"host": @"http://pmc2.sartak.org" },
+             @{@"label": @"BPS", @"host": @"http://bloc.local:5000" },
              ];
 }
 
@@ -127,6 +128,36 @@ NSString * const PMCHostDidChangeNotification = @"PMCHostDidChangeNotification";
         }
     }];
     [task resume];
+}
+
+-(NSURLSessionDataTask *)streamJsonFrom:(NSString *)endpoint chunk:(void (^)(id json, NSError *error))chunk completion:(void (^)(NSError *error))completion {
+    NSURL *url = [NSURL URLWithString:endpoint relativeToURL:[NSURL URLWithString:[self host]]];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request addValue:[self username] forHTTPHeaderField:@"X-PMC-Username"];
+    [request addValue:[self password] forHTTPHeaderField:@"X-PMC-Password"];
+    request.HTTPMethod = @"GET";
+
+    NSLog(@"%@ %@", request.HTTPMethod, request.URL);
+
+    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            NSLog(@"%@", error);
+        }
+
+//        id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(error);
+            });
+        }
+    }];
+
+    [task resume];
+
+    NSLog(@"%@", task);
+
+    return task;
 }
 
 @end

@@ -2,7 +2,6 @@
 #import "PMCVideoTableViewCell.h"
 #import "PMCGameTableViewCell.h"
 #import "PMCTreeTableViewCell.h"
-#import "PMCTagTableViewCell.h"
 #import "PMCSummaryTableViewCell.h"
 #import "PMCFiveStarTableViewCell.h"
 #import "PMCOneStarTableViewCell.h"
@@ -64,7 +63,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         if (indexPath.section == 0) {
             NSDictionary *record = self.records[indexPath.row];
             if ([cell respondsToSelector:@selector(titleLabel)]) {
-                [cell setValue:[self extractLabelFromRecord:record includeSpaceForTag:YES] forKeyPath:@"titleLabel.text"];
+                [cell setValue:[self extractLabelFromRecord:record] forKeyPath:@"titleLabel.text"];
             }
         }
         else if (indexPath.section == 1) {
@@ -80,7 +79,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
 -(void)setTitleFromCurrentRecord {
     if (self.currentRecord) {
-        self.title = [self extractLabelFromRecord:self.currentRecord includeSpaceForTag:NO];
+        self.title = [self extractLabelFromRecord:self.currentRecord];
     }
     else {
         self.title = [PMCHTTPClient sharedClient].currentLocation[@"label"];
@@ -98,7 +97,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCGameTableViewCell" bundle:nil] forCellReuseIdentifier:@"Game"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCTreeTableViewCell" bundle:nil] forCellReuseIdentifier:@"Tree"];
-    [self.tableView registerNib:[UINib nibWithNibName:@"PMCTagTableViewCell" bundle:nil] forCellReuseIdentifier:@"Tag"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCFiveStarTableViewCell" bundle:nil] forCellReuseIdentifier:@"★★★★★"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCOneStarTableViewCell" bundle:nil] forCellReuseIdentifier:@"★☆☆☆☆"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCSummaryTableViewCell" bundle:nil] forCellReuseIdentifier:@"Summary"];
@@ -164,7 +162,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [self extractLabelFromRecord:video includeSpaceForTag:YES];
+    cell.titleLabel.text = [self extractLabelFromRecord:video];
 
     id identifier = [video valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
@@ -197,7 +195,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     cell.immersionIndicator.tintColor = [UIColor greenColor];
 
     if (![[video valueForKeyPath:@"streamable"] boolValue]) {
-        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
+        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.11f brightness:1 alpha:1];
     }
     else if ([[video valueForKeyPath:@"completed"] isEqual:[NSNull null]]) {
         cell.backgroundColor = [UIColor whiteColor];
@@ -217,7 +215,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForGame:(NSDictionary *)game atIndexPath:(NSIndexPath *)indexPath {
     PMCGameTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Game" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [self extractLabelFromRecord:game includeSpaceForTag:YES];
+    cell.titleLabel.text = [self extractLabelFromRecord:game];
 
     id identifier = [game valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
@@ -239,7 +237,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         minutes %= 60;
 
         if (hours) {
-            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dh %2dm %ds", hours, minutes, seconds];
+            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dh %dm %ds", hours, minutes, seconds];
         }
         else {
             cell.playtimeLabel.text = [NSString stringWithFormat:@"%dm %ds", minutes, seconds];
@@ -247,7 +245,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 
     if (![[game valueForKeyPath:@"streamable"] boolValue]) {
-        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.22f brightness:1 alpha:1];
+        cell.backgroundColor = [UIColor colorWithHue:0 saturation:.11f brightness:1 alpha:1];
     }
     else if ([[game valueForKeyPath:@"completed"] isEqual:[NSNull null]]) {
         cell.backgroundColor = [UIColor whiteColor];
@@ -259,17 +257,12 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     return cell;
 }
 
--(NSString *)extractLabelFromRecord:(NSDictionary *)record includeSpaceForTag:(BOOL)extraSpace {
+-(NSString *)extractLabelFromRecord:(NSDictionary *)record {
     for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
         NSString *keyPath = [@"label." stringByAppendingString:lang];
         id label = [record valueForKeyPath:keyPath];
         if (label && label != [NSNull null]) {
-            if (extraSpace && [record[@"type"] isEqualToString:@"tag"]) {
-                return [NSString stringWithFormat:@"  %@  ", label];
-            }
-            else {
-                return label;
-            }
+            return label;
         }
     }
 
@@ -315,20 +308,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForTree:(NSDictionary *)tree atIndexPath:(NSIndexPath *)indexPath {
     PMCTreeTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Tree" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [self extractLabelFromRecord:tree includeSpaceForTag:YES];
+    cell.titleLabel.text = [self extractLabelFromRecord:tree];
 
     return cell;
 }
-
--(UITableViewCell *)tableView:(UITableView *)tableView cellForTag:(NSDictionary *)tag atIndexPath:(NSIndexPath *)indexPath {
-    PMCTagTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Tag" forIndexPath:indexPath];
-
-    cell.titleLabel.text = [self extractLabelFromRecord:tag includeSpaceForTag:YES];
-    cell.titleLabel.layer.cornerRadius = 8;
-
-    return cell;
-}
-
 
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -361,14 +344,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     if (indexPath.section == 0) {
         if ([record[@"type"] isEqualToString:@"tree"]) {
             return [self tableView:tableView cellForTree:record atIndexPath:indexPath];
-        }
-        else if ([record[@"type"] isEqualToString:@"tag"]) {
-            if ([record[@"id"] isEqualToString:@"★★★★★"] || [record[@"id"] isEqualToString:@"★☆☆☆☆"]) {
-                return [tableView dequeueReusableCellWithIdentifier:record[@"id"] forIndexPath:indexPath];
-            }
-            else {
-                return [self tableView:tableView cellForTag:record atIndexPath:indexPath];
-            }
         }
         else if ([record[@"type"] isEqualToString:@"video"]) {
             return [self tableView:tableView cellForVideo:record atIndexPath:indexPath];

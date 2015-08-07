@@ -217,7 +217,7 @@
         minutes %= 60;
 
         if (hours) {
-            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dh %2dm %ds", hours, minutes, seconds];
+            cell.playtimeLabel.text = [NSString stringWithFormat:@"%dh %dm %ds", hours, minutes, seconds];
         }
         else {
             cell.playtimeLabel.text = [NSString stringWithFormat:@"%dm %ds", minutes, seconds];

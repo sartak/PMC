@@ -1,8 +1,10 @@
 #import "PMCStatusViewController.h"
+#import "PMCHTTPClient.h"
 
-@interface PMCStatusViewController () <NSURLSessionDataDelegate>
+@interface PMCStatusViewController ()
 
 @property (nonatomic, strong, readonly) NSString *statusText;
+@property (nonatomic, strong) NSURLSessionDataTask *streamingRequest;
 
 @end
 
@@ -21,6 +23,18 @@
     UITextView *textView = [[UITextView alloc] init];
     textView.editable = NO;
     self.view = textView;
+
+    [self reconnectStream];
+}
+
+-(void)reconnectStream {
+    [self.streamingRequest cancel];
+    self.streamingRequest = [[PMCHTTPClient sharedClient] streamJsonFrom:@"/status" chunk:^(id json, NSError *error) {
+        UITextView *textView = (UITextView *)self.view;
+        textView.text = [textView.text stringByAppendingString:json];
+    } completion:^(NSError *error){
+        [self reconnectStream];
+    }];
 }
 
 @end
