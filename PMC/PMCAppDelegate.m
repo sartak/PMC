@@ -2,7 +2,6 @@
 #import "PMCLibraryViewController.h"
 #import "PMCControlsViewController.h"
 #import "PMCQueueViewController.h"
-#import "PMCStatusViewController.h"
 #import "PMCHTTPClient.h"
 
 @interface PMCAppDelegate ()
@@ -32,13 +31,8 @@
     queue.tabBarItem.image = [UIImage imageNamed:@"Playlist"];
     UINavigationController *queueNav = [[UINavigationController alloc] initWithRootViewController:queue];
 
-    PMCStatusViewController *status = [[PMCStatusViewController alloc] init];
-    status.tabBarItem.image = [UIImage imageNamed:@"Info"];
-    UINavigationController *statusNav = [[UINavigationController alloc] initWithRootViewController:status];
-
-
     UITabBarController *tabVC = [[UITabBarController alloc] init];
-    tabVC.viewControllers = @[controlsNav, libraryNav, queueNav, statusNav];
+    tabVC.viewControllers = @[controlsNav, libraryNav, queueNav];
     tabVC.selectedIndex = 1;
     self.window.rootViewController = tabVC;
 

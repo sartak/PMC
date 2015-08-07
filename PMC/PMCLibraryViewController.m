@@ -313,6 +313,11 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     return cell;
 }
 
+-(void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [[PMCHTTPClient sharedClient] subscribeToStatus];
+}
+
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
