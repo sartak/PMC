@@ -229,6 +229,10 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
     [self resubscribeToStatus];
 }
 
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse {
+    return nil;
+}
+
 -(void)handleStatusJson:(NSDictionary *)event {
     if ([event[@"type"] isEqualToString:@"paused"]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:PMCPauseStatusNotification object:self userInfo:@{@"isPaused":event[@"paused"]}];
