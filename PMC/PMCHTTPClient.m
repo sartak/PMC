@@ -188,7 +188,8 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 }
 
 -(void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    NSLog(@"didFail");
+    NSLog(@"didFail: %@", error);
+    [self resubscribeToStatus];
 }
 
 -(void)unsubscribeToStatus {
