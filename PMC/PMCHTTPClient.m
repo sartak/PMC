@@ -111,8 +111,8 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
                               [value stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
         }];
 
-        NSString *body = [parts componentsJoinedByString:@"&"];
-        request.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *query = [parts componentsJoinedByString:@"&"];
+        request.URL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", request.URL, query]];
     }
 
     NSLog(@"%@ %@", request.HTTPMethod, request.URL);
