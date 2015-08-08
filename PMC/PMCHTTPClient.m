@@ -273,6 +273,7 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
     self.statusBuffer = [NSData data];
 
     NSMutableURLRequest *request = [self requestWithEndpoint:@"/status" method:@"GET"];
+    request.timeoutInterval = 999999;
     NSLog(@"%@ %@", request.HTTPMethod, request.URL);
     NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
     self.statusConnection = connection;
