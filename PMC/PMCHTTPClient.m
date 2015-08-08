@@ -88,7 +88,8 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 
 -(NSMutableURLRequest *)requestWithEndpoint:(NSString *)endpoint method:(NSString *)method {
     NSURL *url = [NSURL URLWithString:endpoint relativeToURL:[NSURL URLWithString:[self host]]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:60];
+    [request setAllowsCellularAccess:YES];
     [request addValue:[self username] forHTTPHeaderField:@"X-PMC-Username"];
     [request addValue:[self password] forHTTPHeaderField:@"X-PMC-Password"];
     request.HTTPMethod = method;
