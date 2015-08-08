@@ -1,7 +1,13 @@
 @interface PMCHTTPClient : NSObject
 
 extern NSString * const PMCHostDidChangeNotification;
+extern NSString * const PMCConnectedStatusNotification;
 extern NSString * const PMCPauseStatusNotification;
+extern NSString * const PMCVolumeStatusNotification;
+extern NSString * const PMCTVPowerStatusNotification;
+extern NSString * const PMCInputStatusNotification;
+extern NSString * const PMCMediaStartedNotification;
+extern NSString * const PMCMediaFinishedNotification;
 
 @property (nonatomic, strong) NSDictionary *currentLocation;
 

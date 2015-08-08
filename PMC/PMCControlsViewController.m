@@ -3,9 +3,27 @@
 
 @interface PMCControlsViewController ()
 
+@property (weak, nonatomic) IBOutlet UIView *tvOnView;
+@property (weak, nonatomic) IBOutlet UIView *tvOffView;
+
+@property (nonatomic) BOOL tvOn;
+
+@property (nonatomic) NSString *pauseStatus;
+@property (nonatomic) BOOL isMuted;
+@property (nonatomic) int volume;
+@property (nonatomic) int targetVolume;
+@property (nonatomic, strong) NSString *input;
+
 @property (weak, nonatomic) IBOutlet UIButton *locationSelector;
 @property (weak, nonatomic) IBOutlet UIButton *playpauseButton;
-@property (nonatomic) BOOL isPaused;
+@property (weak, nonatomic) IBOutlet UILabel *volumeLabel;
+
+@property (weak, nonatomic) IBOutlet UILabel *rcaLabel;
+@property (weak, nonatomic) IBOutlet UILabel *piLabel;
+@property (weak, nonatomic) IBOutlet UILabel *appleTvLabel;
+@property (weak, nonatomic) IBOutlet UIButton *rcaButton;
+@property (weak, nonatomic) IBOutlet UIButton *piButton;
+@property (weak, nonatomic) IBOutlet UIButton *appleTvButton;
 
 @end
 
@@ -14,13 +32,28 @@
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.title = @"Controls";
+        [self setTvOn:NO animated:NO];
+        [self setPauseStatus:@"play"];
+        self.input = @"Pi";
+        self.volume = self.targetVolume = 50;
+        self.isMuted = NO;
+
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pauseStatusDidChange:) name:PMCPauseStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(volumeStatusDidChange:) name:PMCVolumeStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputStatusDidChange:) name:PMCInputStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(televisionPowerDidChange:) name:PMCTVPowerStatusNotification object:nil];
+
     }
     return self;
 }
 
 -(void)viewWillAppear:(BOOL)animated {
+    [self setTvOn:self.tvOn animated:NO];
+    [self refreshPauseStatus];
+    [self refreshVolumeLabel];
+    [self refreshInputButtons];
+
     [self setLocationLabel:[PMCHTTPClient sharedClient].currentLocation[@"label"]];
 }
 
@@ -34,7 +67,13 @@
 -(IBAction)stopPlaying { [self sendMethodToCurrent:@"STOP"]; }
 
 -(IBAction)playPause {
-    [self setIsPaused:!self.isPaused];
+    if ([self.pauseStatus isEqualToString:@"play"]) {
+        [self setPauseStatus:@"pause"];
+    }
+    else if ([self.pauseStatus isEqualToString:@"pause"]) {
+        [self setPauseStatus:@"play"];
+    }
+
     [self sendMethodToCurrent:@"PLAYPAUSE"];
 }
 
@@ -72,24 +111,171 @@
     }];
 }
 
--(void)setIsPaused:(BOOL)isPaused {
-    _isPaused = isPaused;
-
-    if (isPaused) {
+-(void)refreshPauseStatus {
+    NSString *pauseStatus = self.pauseStatus;
+    if ([pauseStatus isEqualToString:@"play"]) {
+        self.playpauseButton.hidden = NO;
+        [self.playpauseButton setImage:[UIImage imageNamed:@"Play"] forState:UIControlStateNormal];
+    }
+    else if ([pauseStatus isEqualToString:@"pause"]) {
+        self.playpauseButton.hidden = NO;
         [self.playpauseButton setImage:[UIImage imageNamed:@"Pause"] forState:UIControlStateNormal];
     }
-    else {
-        [self.playpauseButton setImage:[UIImage imageNamed:@"Play"] forState:UIControlStateNormal];
+    else if ([pauseStatus isEqualToString:@"nothing"]) {
+        self.playpauseButton.hidden = YES;
     }
 }
 
+-(void)setPauseStatus:(NSString *)pauseStatus {
+    _pauseStatus = pauseStatus;
+    [self refreshPauseStatus];
+}
+
 -(void)pauseStatusDidChange:(NSNotification *)notification {
-    if ([notification.userInfo[@"isPaused"] boolValue]) {
-        [self setIsPaused:YES];
+    [self setPauseStatus:notification.userInfo[@"show"]];
+}
+
+-(void)refreshVolumeLabel {
+    NSString *vol = self.volume == self.targetVolume ? [@(self.volume) stringValue] : [NSString stringWithFormat:@"%d → %d", self.volume, self.targetVolume];
+    self.volumeLabel.text = [NSString stringWithFormat:@"Volume: %@", self.isMuted ? @"Mute" : vol];
+}
+
+-(void)setVolume:(int)volume {
+    _volume = volume;
+    [self refreshVolumeLabel];
+}
+
+-(void)setTargetVolume:(int)targetVolume {
+    _targetVolume = targetVolume;
+    [self refreshVolumeLabel];
+}
+
+-(void)setIsMuted:(BOOL)isMuted {
+    _isMuted = isMuted;
+    [self refreshVolumeLabel];
+}
+
+-(void)volumeStatusDidChange:(NSNotification *)notification {
+    [self setVolume:[notification.userInfo[@"volume"] intValue]];
+    [self setIsMuted:[notification.userInfo[@"mute"] boolValue]];
+
+    if (notification.userInfo[@"target"]) {
+        [self setTargetVolume:[notification.userInfo[@"target"] intValue]];
     }
     else {
-        [self setIsPaused:NO];
+        [self setTargetVolume:self.volume];
     }
+}
+
+-(void)refreshInputButtons {
+    NSString *input = self.input;
+
+    self.rcaButton.hidden     = [input isEqualToString:@"RCA"];
+    self.piButton.hidden      = [input isEqualToString:@"Pi"];
+    self.appleTvButton.hidden = [input isEqualToString:@"AppleTV"];
+
+    self.rcaLabel.hidden      = !self.rcaButton.hidden;
+    self.piLabel.hidden       = !self.piButton.hidden;
+    self.appleTvLabel.hidden  = !self.appleTvButton.hidden;
+}
+
+-(void)setInput:(NSString *)input {
+    _input = input;
+    [self refreshInputButtons];
+}
+
+-(void)inputStatusDidChange:(NSNotification *)notification {
+    NSString *input = notification.userInfo[@"input"];
+    [self setInput:input];
+}
+
+-(void)sendInput:(NSString *)input {
+    [[PMCHTTPClient sharedClient] sendMethod:@"PUT" toEndpoint:@"/television/input" withParams:@{@"input": input} completion:nil];
+    [self setInput:input];
+}
+
+- (IBAction)setRCA:(id)sender {
+    [self sendInput:@"RCA"];
+}
+
+- (IBAction)setPi:(id)sender {
+    [self sendInput:@"Pi"];
+}
+
+- (IBAction)setAppleTv:(id)sender {
+    [self sendInput:@"AppleTV"];
+}
+
+-(void)sendVolume:(int)volume {
+    [[PMCHTTPClient sharedClient] sendMethod:@"PUT" toEndpoint:@"/television/volume" withParams:@{@"volume": [@(volume) stringValue]} completion:nil];
+    [self setTargetVolume:volume];
+}
+
+- (IBAction)sendMute:(id)sender {
+    [[PMCHTTPClient sharedClient] sendMethod:@"MUTE" toEndpoint:@"/television/volume" completion:nil];
+    [self setIsMuted:true];
+}
+
+- (IBAction)setVolume25:(id)sender {
+    [self sendVolume:25];
+}
+
+- (IBAction)setVolume50:(id)sender {
+    [self sendVolume:50];
+}
+
+- (IBAction)setVolume75:(id)sender {
+    [self sendVolume:75];
+}
+
+- (IBAction)setVolume100:(id)sender {
+    [self sendVolume:100];
+}
+
+-(void)setTvOn:(BOOL)tvOn animated:(BOOL)animated {
+    if (animated && _tvOn != tvOn) {
+        self.tvOnView.transform = tvOn ? CGAffineTransformMakeTranslation(0, -30) : CGAffineTransformIdentity;
+        self.tvOffView.transform = tvOn ? CGAffineTransformIdentity : CGAffineTransformMakeTranslation(0, -30);
+
+        [UIView animateWithDuration:.3
+                              delay:0
+                            options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionBeginFromCurrentState
+                         animations:^{
+                             self.tvOnView.alpha = tvOn ? 1 : 0;
+                             self.tvOffView.alpha = tvOn ? 0 : 1;
+                             self.tvOnView.transform = tvOn ? CGAffineTransformIdentity : CGAffineTransformMakeTranslation(0, -30);
+                             self.tvOffView.transform = tvOn ? CGAffineTransformMakeTranslation(0, -30) : CGAffineTransformIdentity;
+                         } completion:nil];
+    }
+    else {
+        self.tvOnView.alpha = tvOn ? 1 : 0;
+        self.tvOffView.alpha = tvOn ? 0 : 1;
+    }
+
+    _tvOn = tvOn;
+}
+
+-(void) flip {
+    [self setTvOn:!self.tvOn animated:YES];
+}
+
+-(void)televisionPowerDidChange:(NSNotification *)notification {
+    if ([notification.userInfo[@"on"] boolValue]) {
+        [self setTvOn:YES animated:YES];
+    }
+    else {
+        [self setTvOn:NO animated:YES];
+    }
+}
+
+- (IBAction)turnTVOn:(id)sender {
+    [[PMCHTTPClient sharedClient] sendMethod:@"ON" toEndpoint:@"/television/power" completion:nil];
+    [self setTvOn:YES animated:YES];
+}
+
+- (IBAction)turnTVOff:(id)sender {
+    [[PMCHTTPClient sharedClient] sendMethod:@"OFF" toEndpoint:@"/television/power" completion:nil];
+    [self setTvOn:NO animated:YES];
 }
 
 @end

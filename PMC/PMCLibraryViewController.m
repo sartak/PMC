@@ -34,6 +34,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         self.currentRecord = record;
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(languageDidChange:) name:PMCLanguageDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didConnect) name:PMCConnectedStatusNotification object:nil];
     }
     return self;
 }
@@ -101,8 +102,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCOneStarTableViewCell" bundle:nil] forCellReuseIdentifier:@"★☆☆☆☆"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCSummaryTableViewCell" bundle:nil] forCellReuseIdentifier:@"Summary"];
 
-    [self.refreshControl beginRefreshing];
-    [self refreshRecords:self.refreshControl];
+    if (self.currentRecord) {
+        [self.refreshControl beginRefreshing];
+        [self refreshRecords:self.refreshControl];
+    }
 
     [self setTitleFromCurrentRecord];
 
@@ -138,6 +141,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 
     [self.tableView reloadData];
+}
+
+-(void)didConnect {
+    [self refreshRecords];
 }
 
 -(void)refreshRecords {

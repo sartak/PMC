@@ -7,6 +7,7 @@
 
 @property (nonatomic, strong) NSArray *media;
 @property (nonatomic, strong) NSDictionary *currentMedia;
+@property (nonatomic, strong) NSTimer *notificationRefreshTimer;
 
 @end
 
@@ -16,8 +17,30 @@
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.title = @"Queue";
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCMediaStartedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCMediaFinishedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didConnect) name:PMCConnectedStatusNotification object:nil];
     }
     return self;
+}
+
+-(void)mediaDidChange {
+    if (self.notificationRefreshTimer) {
+        return;
+    }
+
+    self.notificationRefreshTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(notificationRefresh) userInfo:nil repeats:NO];
+}
+
+-(void)notificationRefresh {
+    [self.notificationRefreshTimer invalidate];
+    self.notificationRefreshTimer = nil;
+
+    [self refreshMedia:self.refreshControl];
+}
+
+-(void)didConnect {
+    [self notificationRefresh];
 }
 
 -(void)loadView {
@@ -30,9 +53,6 @@
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCGameTableViewCell" bundle:nil] forCellReuseIdentifier:@"Game"];
-
-    [self.refreshControl beginRefreshing];
-    [self refreshMedia:self.refreshControl];
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Clear" style:UIBarButtonItemStylePlain target:self action:@selector(clearQueue)];
 }

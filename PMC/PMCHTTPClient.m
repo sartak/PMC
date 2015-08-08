@@ -1,7 +1,13 @@
 #import "PMCHTTPClient.h"
 
 NSString * const PMCHostDidChangeNotification = @"PMCHostDidChangeNotification";
+NSString * const PMCConnectedStatusNotification = @"PMCConnectedStatusNotification";
 NSString * const PMCPauseStatusNotification = @"PMCPauseStatusNotification";
+NSString * const PMCVolumeStatusNotification = @"PMCVolumeStatusNotification";
+NSString * const PMCInputStatusNotification = @"PMCInputStatusNotification";
+NSString * const PMCTVPowerStatusNotification = @"PMCTVPowerStatusNotification";
+NSString * const PMCMediaStartedNotification = @"PMCMediaStartedNotification";
+NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 
 @interface PMCHTTPClient () <NSURLConnectionDataDelegate>
 
@@ -59,6 +65,12 @@ NSString * const PMCPauseStatusNotification = @"PMCPauseStatusNotification";
 }
 
 -(void)setCurrentLocation:(NSDictionary *)currentLocation {
+    // init
+    if (!_currentLocation) {
+        _currentLocation = currentLocation;
+        return;
+    }
+
     if ([_currentLocation[@"host"] isEqualToString:currentLocation[@"host"]]) {
         return;
     }
