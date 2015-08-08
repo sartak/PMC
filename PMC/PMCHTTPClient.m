@@ -234,8 +234,31 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 }
 
 -(void)handleStatusJson:(NSDictionary *)event {
-    if ([event[@"type"] isEqualToString:@"paused"]) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:PMCPauseStatusNotification object:self userInfo:@{@"isPaused":event[@"paused"]}];
+    NSString *type = event[@"type"];
+
+    if ([type isEqualToString:@"playpause"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCPauseStatusNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"finished"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCMediaFinishedNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"started"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCMediaStartedNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"television/volume"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCVolumeStatusNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"television/input"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCInputStatusNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"television/power"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCTVPowerStatusNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"connected"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCConnectedStatusNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"subscriber"]) {
+        // ignore. I'm self-centered
     }
     else {
         NSLog(@"%@", event);
