@@ -1,80 +1,94 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6751" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9059" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
-        <capability name="Alignment constraints to the first baseline" minToolsVersion="6.0"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="U9T-4m-PDE" customClass="PMCVideoTableViewCell">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="detailButton" indentationWidth="10" rowHeight="158" id="U9T-4m-PDE" customClass="PMCVideoTableViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="158"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="U9T-4m-PDE" id="oVa-60-nx9">
-                <rect key="frame" x="0.0" y="0.0" width="273" height="43"/>
+                <rect key="frame" x="0.0" y="0.0" width="273" height="157.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1XM-32-s1x">
-                        <rect key="frame" x="20" y="6" width="253" height="21"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                        <nil key="highlightedColor"/>
-                    </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vl2-IR-Ubf">
-                        <rect key="frame" x="20" y="22" width="174" height="21"/>
+                        <rect key="frame" x="20" y="141" width="174" height="16"/>
                         <constraints>
-                            <constraint firstAttribute="width" constant="174" id="teS-SS-wBM"/>
+                            <constraint firstAttribute="width" constant="174" id="8cw-og-eX8"/>
                         </constraints>
                         <fontDescription key="fontDescription" type="system" pointSize="13"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Circle" translatesAutoresizingMaskIntoConstraints="NO" id="HXR-yC-pXS">
-                        <rect key="frame" x="4" y="18" width="8" height="8"/>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" misplaced="YES" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cCd-Nb-Eg8">
+                        <rect key="frame" x="202" y="141" width="110" height="16"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" image="Circle" translatesAutoresizingMaskIntoConstraints="NO" id="HXR-yC-pXS">
+                        <rect key="frame" x="4" y="73" width="12" height="12"/>
                         <color key="tintColor" red="0.30980392159999998" green="0.84313725490000002" blue="0.4039215686" alpha="1" colorSpace="deviceRGB"/>
                         <constraints>
-                            <constraint firstAttribute="height" constant="8" id="T9X-cN-n5W"/>
-                            <constraint firstAttribute="width" constant="8" id="hEI-oN-d1G"/>
+                            <constraint firstAttribute="height" constant="12" id="vEQ-Y1-UM1"/>
                         </constraints>
                     </imageView>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cCd-Nb-Eg8">
-                        <rect key="frame" x="202" y="22" width="110" height="21"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1XM-32-s1x">
+                        <rect key="frame" x="20" y="8" width="253" height="133"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
+                    <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Playlist" translatesAutoresizingMaskIntoConstraints="NO" id="ajH-lD-mXz" userLabel="Queue Indicator">
+                        <rect key="frame" x="4" y="143" width="12" height="12"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="12" id="8ND-5c-x7m"/>
+                        </constraints>
+                    </imageView>
+                    <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Play Circle" translatesAutoresizingMaskIntoConstraints="NO" id="u4h-Ar-KeX" userLabel="Playing Indicator">
+                        <rect key="frame" x="4" y="143" width="12" height="12"/>
+                    </imageView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="firstBaseline" secondItem="Vl2-IR-Ubf" secondAttribute="firstBaseline" id="3Ic-j2-M6w"/>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="baseline" secondItem="Vl2-IR-Ubf" secondAttribute="baseline" id="FIg-9W-P9l"/>
-                    <constraint firstItem="1XM-32-s1x" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="-2" id="L96-Z2-7yd"/>
-                    <constraint firstItem="1XM-32-s1x" firstAttribute="leading" secondItem="HXR-yC-pXS" secondAttribute="trailing" constant="8" symbolic="YES" id="OOj-Qi-yfp"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="Vl2-IR-Ubf" secondAttribute="bottom" constant="-7.5" id="Tea-UA-1xm"/>
-                    <constraint firstItem="1XM-32-s1x" firstAttribute="leading" secondItem="Vl2-IR-Ubf" secondAttribute="leading" id="YD7-mJ-bok"/>
-                    <constraint firstItem="Vl2-IR-Ubf" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="14" id="a6w-Ut-Vqb"/>
-                    <constraint firstItem="HXR-yC-pXS" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="-4" id="fU1-Bt-L45"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="1XM-32-s1x" secondAttribute="trailing" constant="39" id="kto-Y5-sKK"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="1XM-32-s1x" secondAttribute="bottom" constant="8.5" id="okb-hj-bh4"/>
-                    <constraint firstItem="HXR-yC-pXS" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" constant="10" id="rce-80-2hd"/>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="leading" secondItem="Vl2-IR-Ubf" secondAttribute="trailing" constant="8" symbolic="YES" id="rmI-9J-0Wv"/>
-                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="trailing" secondItem="oVa-60-nx9" secondAttribute="trailingMargin" id="xeu-Zq-JAo"/>
+                    <constraint firstItem="u4h-Ar-KeX" firstAttribute="leading" secondItem="ajH-lD-mXz" secondAttribute="leading" id="3Kk-Rg-D1C"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="Vl2-IR-Ubf" secondAttribute="bottom" constant="-7.5" id="4jn-e0-hr9"/>
+                    <constraint firstItem="u4h-Ar-KeX" firstAttribute="bottom" secondItem="ajH-lD-mXz" secondAttribute="bottom" id="5QR-GB-e2D"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="cCd-Nb-Eg8" secondAttribute="bottom" constant="-7.5" id="5rI-Bl-rIK"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="top" secondItem="1XM-32-s1x" secondAttribute="bottom" id="9jf-3W-M9N"/>
+                    <constraint firstItem="Vl2-IR-Ubf" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="12" id="KNI-pN-4db"/>
+                    <constraint firstItem="1XM-32-s1x" firstAttribute="leading" secondItem="HXR-yC-pXS" secondAttribute="trailing" constant="4" id="Nob-Hu-3zY"/>
+                    <constraint firstItem="u4h-Ar-KeX" firstAttribute="top" secondItem="ajH-lD-mXz" secondAttribute="top" id="RTx-hg-7OF"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="baseline" secondItem="Vl2-IR-Ubf" secondAttribute="baseline" id="SeE-tP-GEZ"/>
+                    <constraint firstItem="u4h-Ar-KeX" firstAttribute="trailing" secondItem="ajH-lD-mXz" secondAttribute="trailing" id="Umv-tN-Gtm"/>
+                    <constraint firstItem="HXR-yC-pXS" firstAttribute="centerY" secondItem="oVa-60-nx9" secondAttribute="centerY" id="bTn-vi-HCd"/>
+                    <constraint firstItem="HXR-yC-pXS" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="-4" id="ckf-4v-0Tm"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="leading" secondItem="Vl2-IR-Ubf" secondAttribute="trailing" constant="8" id="iTG-3O-vaW"/>
+                    <constraint firstItem="ajH-lD-mXz" firstAttribute="centerY" secondItem="Vl2-IR-Ubf" secondAttribute="centerY" id="kmX-14-1UG"/>
+                    <constraint firstItem="1XM-32-s1x" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" id="kpI-Rd-qVa"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="1XM-32-s1x" secondAttribute="trailing" constant="39" id="phk-fi-03s"/>
+                    <constraint firstItem="Vl2-IR-Ubf" firstAttribute="leading" secondItem="ajH-lD-mXz" secondAttribute="trailing" constant="4" id="qDL-DI-Lbg"/>
+                    <constraint firstItem="cCd-Nb-Eg8" firstAttribute="trailing" secondItem="oVa-60-nx9" secondAttribute="trailingMargin" id="qkA-Sz-7lO"/>
+                    <constraint firstItem="ajH-lD-mXz" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="-4" id="rUB-dp-lrO"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
                 <outlet property="durationLabel" destination="cCd-Nb-Eg8" id="iml-2h-Cxs"/>
+                <outlet property="enqueuedIndicator" destination="ajH-lD-mXz" id="fI6-kA-zIz"/>
                 <outlet property="identifierLabel" destination="Vl2-IR-Ubf" id="MW4-wa-0s6"/>
                 <outlet property="immersionIndicator" destination="HXR-yC-pXS" id="lCu-Uv-4fJ"/>
+                <outlet property="playingIndicator" destination="u4h-Ar-KeX" id="5Xh-cR-Gef"/>
                 <outlet property="titleLabel" destination="1XM-32-s1x" id="L1r-tR-zh0"/>
             </connections>
+            <point key="canvasLocation" x="325" y="290"/>
         </tableViewCell>
     </objects>
     <resources>
         <image name="Circle" width="12" height="12"/>
+        <image name="Play Circle" width="26" height="26"/>
+        <image name="Playlist" width="29" height="24"/>
     </resources>
-    <simulatedMetricsContainer key="defaultSimulatedMetrics">
-        <simulatedStatusBarMetrics key="statusBar"/>
-        <simulatedOrientationMetrics key="orientation"/>
-        <simulatedScreenMetrics key="destination" type="retina4"/>
-    </simulatedMetricsContainer>
 </document>

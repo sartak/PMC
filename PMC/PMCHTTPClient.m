@@ -1,15 +1,19 @@
 #import "PMCHTTPClient.h"
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import "RNPinnedCertValidator.h"
 
 NSString * const PMCHostDidChangeNotification = @"PMCHostDidChangeNotification";
 NSString * const PMCConnectedStatusNotification = @"PMCConnectedStatusNotification";
 NSString * const PMCPauseStatusNotification = @"PMCPauseStatusNotification";
+NSString * const PMCFastForwardStatusNotification = @"PMCFastForwardStatusNotification";
 NSString * const PMCVolumeStatusNotification = @"PMCVolumeStatusNotification";
 NSString * const PMCInputStatusNotification = @"PMCInputStatusNotification";
 NSString * const PMCTVPowerStatusNotification = @"PMCTVPowerStatusNotification";
 NSString * const PMCMediaStartedNotification = @"PMCMediaStartedNotification";
 NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
+NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 
-@interface PMCHTTPClient () <NSURLConnectionDataDelegate>
+@interface PMCHTTPClient () <NSURLConnectionDataDelegate, NSURLSessionDelegate>
 
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSURLConnection *statusConnection;
@@ -35,15 +39,26 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 -(instancetype)init {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue mainQueue]];
         self.session = session;
+
+        [NSNotificationCenter.defaultCenter addObserverForName:CTRadioAccessTechnologyDidChangeNotification
+                                                        object:nil
+                                                         queue:nil
+                                                    usingBlock:^(NSNotification *note) {
+                                                        NSLog(@"radio changed");
+                                                        self.statusBackoffExponent = 0;
+                                                        [self resubscribeToStatus];
+                                                    }];
+
+        [self subscribeToStatus];
     }
     return self;
 }
 
 +(NSArray *)locations {
     return @[
-             @{@"label": @"Living Room", @"host": @"http://pmc.sartak.org" },
+             @{@"label": @"Living Room", @"host": @"https://pmc.sartak.org/" },
              @{@"label": @"Bedroom", @"host": @"http://pmc2.sartak.org" },
              @{@"label": @"BPS", @"host": @"http://bloc.local:5000" },
              ];
@@ -87,8 +102,9 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 }
 
 -(NSMutableURLRequest *)requestWithEndpoint:(NSString *)endpoint method:(NSString *)method {
-    NSURL *url = [NSURL URLWithString:endpoint relativeToURL:[NSURL URLWithString:[self host]]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:60];
+    NSURL *url = [NSURL URLWithString:[[self host] stringByAppendingString:endpoint]];
+    NSLog(@"%@", url);
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request setAllowsCellularAccess:YES];
     [request addValue:[self username] forHTTPHeaderField:@"X-PMC-Username"];
     [request addValue:[self password] forHTTPHeaderField:@"X-PMC-Password"];
@@ -151,6 +167,8 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 }
 
 -(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    NSLog(@"didReceive");
+
     // we've bailed out
     if (!self.statusConnection) {
         return;
@@ -158,6 +176,8 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 
     NSMutableData *buffer = [self.statusBuffer mutableCopy];
     [buffer appendData:data];
+
+    NSLog(@"%@", [[NSString alloc] initWithData:buffer encoding:NSUTF8StringEncoding]);
 
     while (1) {
         NSRange range = [buffer rangeOfData:[@"\n" dataUsingEncoding:NSUTF8StringEncoding] options:0 range:NSMakeRange(0, buffer.length)];
@@ -193,6 +213,8 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 }
 
 -(void)unsubscribeToStatus {
+    NSLog(@"unsubscribe");
+
     [self.resubscribeTimer invalidate];
     self.resubscribeTimer = nil;
 
@@ -201,6 +223,8 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 }
 
 -(void)resubscribeToStatus {
+    NSLog(@"resubscribe");
+
     [self.statusConnection cancel];
     self.statusConnection = nil;
 
@@ -220,24 +244,26 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 // this happens before the didReceiveData callback, which means we don't try to parse the proxy's 502
 // html page as JSON
 -(void)connection:(NSURLConnection *)connection didReceiveResponse:(NSHTTPURLResponse *)response {
+    NSLog(@"%@", response);
     if (response.statusCode != 200) {
         [self resubscribeToStatus];
     }
 }
 
 -(void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    NSLog(@"finished");
     [self resubscribeToStatus];
-}
-
-- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse {
-    return nil;
 }
 
 -(void)handleStatusJson:(NSDictionary *)event {
     NSString *type = event[@"type"];
+    NSLog(@"event:%@", type);
 
     if ([type isEqualToString:@"playpause"]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:PMCPauseStatusNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"fastforward"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCFastForwardStatusNotification object:self userInfo:event];
     }
     else if ([type isEqualToString:@"finished"]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:PMCMediaFinishedNotification object:self userInfo:event];
@@ -254,6 +280,9 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
     else if ([type isEqualToString:@"television/power"]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:PMCTVPowerStatusNotification object:self userInfo:event];
     }
+    else if ([type isEqualToString:@"queue"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCQueueChangeNotification object:self userInfo:event];
+    }
     else if ([type isEqualToString:@"connected"]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:PMCConnectedStatusNotification object:self userInfo:event];
     }
@@ -261,22 +290,56 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
         // ignore. I'm self-centered
     }
     else {
-        NSLog(@"%@", event);
+        NSLog(@"unhandled event: %@", event);
     }
 }
 
 -(void)subscribeToStatus {
+    NSLog(@"subscribe");
     if (self.statusConnection) {
         return;
     }
 
-    self.statusBuffer = [NSData data];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.statusBuffer = [NSData data];
 
-    NSMutableURLRequest *request = [self requestWithEndpoint:@"/status" method:@"GET"];
-    request.timeoutInterval = 999999;
-    NSLog(@"%@ %@", request.HTTPMethod, request.URL);
-    NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
-    self.statusConnection = connection;
+        NSMutableURLRequest *request = [self requestWithEndpoint:@"/status" method:@"GET"];
+        NSLog(@"%@ %@", request.HTTPMethod, request.URL);
+        NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
+        self.statusConnection = connection;
+    });
+}
+
+- (void)connection:(NSURLConnection *)connection
+willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    RNPinnedCertValidator *validator = [[RNPinnedCertValidator alloc] initWithCertificatePath:[[NSBundle mainBundle] pathForResource:@"pmc.sartak.org" ofType:@"cer"]];
+    [validator validateChallenge:challenge];
+}
+
+- (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler{
+
+    if ([[[challenge protectionSpace] authenticationMethod] isEqualToString: NSURLAuthenticationMethodServerTrust]) {
+        SecTrustRef serverTrust = [[challenge protectionSpace] serverTrust];
+        (void) SecTrustEvaluate(serverTrust, NULL);
+        NSData *localCertificateData = [NSData dataWithContentsOfFile: [[NSBundle mainBundle]
+                                                                        pathForResource:@"pmc.sartak.org"
+                                                                        ofType: @"crt"]];
+        SecCertificateRef remoteVersionOfServerCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0);
+        CFDataRef remoteCertificateData = SecCertificateCopyData(remoteVersionOfServerCertificate);
+        BOOL certificatesAreTheSame = [localCertificateData isEqualToData: (__bridge NSData *)remoteCertificateData];
+        CFRelease(remoteCertificateData);
+        NSURLCredential* cred  = [NSURLCredential credentialForTrust: serverTrust];
+#ifdef DEBUG
+        certificatesAreTheSame = YES;
+#endif
+
+        if (certificatesAreTheSame) {
+            completionHandler(NSURLSessionAuthChallengeUseCredential,cred);
+        }
+        else {
+            completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace,nil);
+        }
+    }
 }
 
 @end

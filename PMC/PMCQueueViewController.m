@@ -3,6 +3,8 @@
 #import "PMCGameTableViewCell.h"
 #import "PMCHTTPClient.h"
 
+NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification";
+
 @interface PMCQueueViewController ()
 
 @property (nonatomic, strong) NSArray *media;
@@ -13,14 +15,16 @@
 
 @implementation PMCQueueViewController
 
--(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+-(id)init {
+    if (self = [super init]) {
         self.title = @"Queue";
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCMediaStartedNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCMediaFinishedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCQueueChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didConnect) name:PMCConnectedStatusNotification object:nil];
     }
+
     return self;
 }
 
@@ -49,12 +53,22 @@
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(refreshMedia:) forControlEvents:UIControlEventValueChanged];
 
-    self.tableView.rowHeight = 44;
+    self.tableView.estimatedRowHeight = 44;
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCGameTableViewCell" bundle:nil] forCellReuseIdentifier:@"Game"];
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Clear" style:UIBarButtonItemStylePlain target:self action:@selector(clearQueue)];
+}
+
+-(void)finishRefresh:(UIRefreshControl *)sender {
+    long count = self.media.count;
+    self.tabBarItem.badgeValue = count ? [@(count) stringValue] : nil;
+    [self.tableView reloadData];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:PMCQueueDidChangeNotification object:self userInfo:nil];
+
+    [sender endRefreshing];
 }
 
 -(void)refreshMedia:(UIRefreshControl *)sender {
@@ -66,8 +80,7 @@
         refreshedMedia = YES;
 
         if (refreshedCurrent) {
-            [self.tableView reloadData];
-            [sender endRefreshing];
+            [self finishRefresh:sender];
         }
     }];
 
@@ -76,8 +89,7 @@
         refreshedCurrent = YES;
 
         if (refreshedMedia) {
-            [self.tableView reloadData];
-            [sender endRefreshing];
+            [self finishRefresh:sender];
         }
     }];
 }
@@ -114,7 +126,8 @@
 
 -(NSString *)extractLabelFromRecord:(NSDictionary *)record includeSpaceForTag:(BOOL)extraSpace {
     for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
-        NSString *keyPath = [@"label." stringByAppendingString:lang];
+        NSArray *components = [lang componentsSeparatedByString:@"-"];
+        NSString *keyPath = [@"label." stringByAppendingString:components[0]];
         id label = [record valueForKeyPath:keyPath];
         if (label && label != [NSNull null]) {
             if (extraSpace && [record[@"type"] isEqualToString:@"tag"]) {
@@ -192,6 +205,17 @@
     cell.immersionIndicator.tintColor = [UIColor greenColor];
 
     if (isCurrent) {
+        cell.playingIndicator.hidden = NO;
+        cell.enqueuedIndicator.hidden = YES;
+    }
+    else {
+        cell.playingIndicator.hidden = YES;
+        cell.enqueuedIndicator.hidden = NO;
+    }
+
+    cell.accessoryType = UITableViewCellAccessoryNone;
+
+    if (isCurrent) {
         cell.backgroundColor = [UIColor colorWithWhite:0.95f alpha:1];
     }
     else if (![[video valueForKeyPath:@"streamable"] boolValue]) {
@@ -204,7 +228,7 @@
         NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:[[video valueForKeyPath:@"last_played"] intValue]];
         NSTimeInterval since = [[NSDate date] timeIntervalSinceDate:lastPlayed];
         double percent = since / (365*24*60*60.);
-        double saturation = .33 * (1-percent);
+        double saturation = .10 + .25 * (1-percent);
 
         cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];
     }
@@ -245,6 +269,15 @@
     }
 
     if (isCurrent) {
+        cell.playingIndicator.hidden = NO;
+        cell.enqueuedIndicator.hidden = YES;
+    }
+    else {
+        cell.playingIndicator.hidden = YES;
+        cell.enqueuedIndicator.hidden = NO;
+    }
+
+    if (isCurrent) {
         cell.backgroundColor = [UIColor colorWithWhite:0.95f alpha:1];
     }
     else if (![[game valueForKeyPath:@"streamable"] boolValue]) {
@@ -263,6 +296,21 @@
 -(void)hostDidChange:(NSNotification *)notification {
     [self.refreshControl beginRefreshing];
     [self refreshMedia:self.refreshControl];
+}
+
+-(BOOL)isPlayingMedia:(NSDictionary *)media {
+    return [[media valueForKey:@"id"] isEqual:[self.currentMedia valueForKey:@"id"]];
+}
+
+-(BOOL)hasQueuedMedia:(NSDictionary *)media {
+    NSNumber *needle = [media valueForKey:@"id"];
+    for (NSDictionary *queue in self.media) {
+        if ([needle isEqual:[queue valueForKey:@"id"]]) {
+            return YES;
+        }
+    }
+
+    return NO;
 }
 
 -(void)dealloc {

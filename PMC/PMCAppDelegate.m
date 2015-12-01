@@ -21,15 +21,15 @@
     controls.tabBarItem.image = [UIImage imageNamed:@"Play Circle"];
     UINavigationController *controlsNav = [[UINavigationController alloc] initWithRootViewController:controls];
 
-    PMCLibraryViewController *library = [[PMCLibraryViewController alloc] initWithRequestPath:@"/library" forRecord:nil];
+    PMCQueueViewController *queue = [[PMCQueueViewController alloc] init];
+    queue.tabBarItem.image = [UIImage imageNamed:@"Playlist"];
+    UINavigationController *queueNav = [[UINavigationController alloc] initWithRootViewController:queue];
+
+    PMCLibraryViewController *library = [[PMCLibraryViewController alloc] initWithRequestPath:@"/library" forRecord:nil withQueue:queue];
     library.tabBarItem.image = [UIImage imageNamed:@"Albums"];
     UINavigationController *libraryNav = [[UINavigationController alloc] initWithRootViewController:library];
     self.libraryNav = libraryNav;
     self.libraryRoot = library;
-
-    PMCQueueViewController *queue = [[PMCQueueViewController alloc] init];
-    queue.tabBarItem.image = [UIImage imageNamed:@"Playlist"];
-    UINavigationController *queueNav = [[UINavigationController alloc] initWithRootViewController:queue];
 
     UITabBarController *tabVC = [[UITabBarController alloc] init];
     tabVC.viewControllers = @[controlsNav, libraryNav, queueNav];
@@ -47,6 +47,19 @@
     [self.libraryNav popToRootViewControllerAnimated:NO];
     [self.libraryRoot refreshRecords];
     self.libraryRoot.title = [PMCHTTPClient sharedClient].currentLocation[@"label"];
+}
+
+-(void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler {
+    if ([shortcutItem.type isEqualToString:@"playpause"]) {
+        [[PMCHTTPClient sharedClient] sendMethod:@"PLAYPAUSE" toEndpoint:@"/current" completion:^(NSError *error) {
+            completionHandler(error ? NO : YES);
+        }];
+    }
+    else if ([shortcutItem.type isEqualToString:@"immerse"]) {
+        [[PMCHTTPClient sharedClient] sendMethod:@"PUT" toEndpoint:@"/queue/source" withParams:@{@"tree":@"245"} completion:^(NSError *error) {
+            completionHandler(error ? NO : YES);
+        }];
+    }
 }
 
 @end

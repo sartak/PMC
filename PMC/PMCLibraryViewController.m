@@ -6,12 +6,14 @@
 #import "PMCFiveStarTableViewCell.h"
 #import "PMCOneStarTableViewCell.h"
 #import "PMCHTTPClient.h"
+#import "PMCQueueViewController.h"
 
-@import MediaPlayer;
+@import AVFoundation;
+@import AVKit;
 
 NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotification";
 
-@interface PMCLibraryViewController ()
+@interface PMCLibraryViewController () <AVAssetResourceLoaderDelegate>
 
 @property (nonatomic, strong) NSDictionary *currentRecord;
 @property (nonatomic, strong) NSArray *records;
@@ -21,20 +23,24 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 @property (nonatomic) int totalVideos;
 @property (nonatomic) int totalPlaytime;
 @property (nonatomic) int totalGames;
+@property (nonatomic, strong) PMCQueueViewController *queue;
 
 @end
 
 @implementation PMCLibraryViewController
 
--(instancetype)initWithRequestPath:(NSString *)requestPath forRecord:(NSDictionary *)record {
+-(instancetype)initWithRequestPath:(NSString *)requestPath forRecord:(NSDictionary *)record withQueue:(PMCQueueViewController *)queue {
     if (self = [self init]) {
         _requestPath = requestPath;
+        _queue = queue;
 
         self.currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
         self.currentRecord = record;
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(languageDidChange:) name:PMCLanguageDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(queueDidChange:) name:PMCQueueDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didConnect) name:PMCConnectedStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishMedia) name:PMCMediaFinishedNotification object:nil];
     }
     return self;
 }
@@ -73,6 +79,38 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 }
 
+-(void)redrawForQueueChange {
+    for (UITableViewCell<PMCMediaCell> *cell in self.tableView.visibleCells) {
+        if ([cell isKindOfClass:[PMCTreeTableViewCell class]]) {
+            continue;
+        }
+
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+        if (indexPath.section == 0) {
+            NSDictionary *record = self.records[indexPath.row];
+
+            if ([self.queue isPlayingMedia:record]) {
+                cell.playingIndicator.hidden = NO;
+                cell.enqueuedIndicator.hidden = YES;
+            }
+            else if ([self.queue hasQueuedMedia:record]) {
+                cell.playingIndicator.hidden = YES;
+                cell.enqueuedIndicator.hidden = NO;
+            }
+            else {
+                cell.playingIndicator.hidden = YES;
+                cell.enqueuedIndicator.hidden = YES;
+            }
+            
+
+        }
+    }
+}
+
+-(void)queueDidChange:(NSNotification *)notification {
+    [self redrawForQueueChange];
+}
+
 -(void)languageDidChange:(NSNotification *)notification {
     self.currentLanguage = notification.userInfo[@"new"];
     [self redrawForLanguageChange];
@@ -93,7 +131,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(refreshRecords:) forControlEvents:UIControlEventValueChanged];
 
-    self.tableView.rowHeight = 44;
+    self.tableView.estimatedRowHeight = 44;
 
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCVideoTableViewCell" bundle:nil] forCellReuseIdentifier:@"Video"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PMCGameTableViewCell" bundle:nil] forCellReuseIdentifier:@"Game"];
@@ -144,6 +182,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 }
 
 -(void)didConnect {
+    [self refreshRecords];
+}
+
+-(void)didFinishMedia {
     [self refreshRecords];
 }
 
@@ -201,6 +243,21 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     cell.immersionIndicator.hidden = ![[video valueForKeyPath:@"immersible"] boolValue];
     cell.immersionIndicator.tintColor = [UIColor greenColor];
 
+    cell.accessoryType = [video valueForKeyPath:@"streamPath"] ? UITableViewCellAccessoryDetailButton : UITableViewCellAccessoryNone;
+
+    if ([self.queue isPlayingMedia:video]) {
+        cell.playingIndicator.hidden = NO;
+        cell.enqueuedIndicator.hidden = YES;
+    }
+    else if ([self.queue hasQueuedMedia:video]) {
+        cell.playingIndicator.hidden = YES;
+        cell.enqueuedIndicator.hidden = NO;
+    }
+    else {
+        cell.playingIndicator.hidden = YES;
+        cell.enqueuedIndicator.hidden = YES;
+    }
+
     if (![[video valueForKeyPath:@"streamable"] boolValue]) {
         cell.backgroundColor = [UIColor colorWithHue:0 saturation:.11f brightness:1 alpha:1];
     }
@@ -211,7 +268,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:[[video valueForKeyPath:@"last_played"] intValue]];
         NSTimeInterval since = [[NSDate date] timeIntervalSinceDate:lastPlayed];
         double percent = since / (365*24*60*60.);
-        double saturation = .33 * (1-percent);
+        double saturation = .10 + .25 * (1-percent);
 
         cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];
     }
@@ -251,6 +308,19 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         }
     }
 
+    if ([self.queue isPlayingMedia:game]) {
+        cell.playingIndicator.hidden = NO;
+        cell.enqueuedIndicator.hidden = YES;
+    }
+    else if ([self.queue hasQueuedMedia:game]) {
+        cell.playingIndicator.hidden = YES;
+        cell.enqueuedIndicator.hidden = NO;
+    }
+    else {
+        cell.playingIndicator.hidden = NO;
+        cell.enqueuedIndicator.hidden = NO;
+    }
+
     if (![[game valueForKeyPath:@"streamable"] boolValue]) {
         cell.backgroundColor = [UIColor colorWithHue:0 saturation:.11f brightness:1 alpha:1];
     }
@@ -266,14 +336,15 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
 -(NSString *)extractLabelFromRecord:(NSDictionary *)record {
     for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
-        NSString *keyPath = [@"label." stringByAppendingString:lang];
+        NSArray *components = [lang componentsSeparatedByString:@"-"];
+        NSString *keyPath = [@"label." stringByAppendingString:components[0]];
         id label = [record valueForKeyPath:keyPath];
         if (label && label != [NSNull null]) {
             return label;
         }
     }
 
-    return nil;
+    return [record valueForKeyPath:@"label.en"];
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView summaryCellAtIndexPath:(NSIndexPath *)indexPath withCount:(int)count andDuration:(int)duration singular:(NSString *)singular plural:(NSString *)plural serial:(BOOL)serial {
@@ -318,11 +389,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     cell.titleLabel.text = [self extractLabelFromRecord:tree];
 
     return cell;
-}
-
--(void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    [[PMCHTTPClient sharedClient] subscribeToStatus];
 }
 
 -(void)dealloc {
@@ -387,7 +453,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
     if (record[@"requestPath"]) {
-        PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"] forRecord:record];
+        PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:record[@"requestPath"] forRecord:record withQueue:self.queue];
         next.currentLanguage = self.currentLanguage;
 
         [self.navigationController pushViewController:next animated:YES];
@@ -395,6 +461,50 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     else {
         [self enqueueMedia:record];
     }
+}
+
+-(void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    NSDictionary *record = self.records[indexPath.row];
+    if (record[@"streamPath"]) {
+        NSString *endpoint = [NSString stringWithFormat:@"%@%@&user=%@&pass=%@", [[PMCHTTPClient sharedClient] host], record[@"streamPath"], [[NSBundle mainBundle] objectForInfoDictionaryKey:@"PMC_USERNAME"], [[NSBundle mainBundle] objectForInfoDictionaryKey:@"PMC_PASSWORD"]];
+        NSURL *url = [NSURL URLWithString:endpoint];
+        NSLog(@"%@", url);
+
+        AVURLAsset *asset = [AVURLAsset URLAssetWithURL:url options:@{}];
+        [asset.resourceLoader setDelegate:self queue:dispatch_get_main_queue()];
+
+        AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:asset];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(itemDidFinishPlaying:) name:AVPlayerItemDidPlayToEndTimeNotification object:item];
+
+        AVPlayer *player = [AVPlayer playerWithPlayerItem:item];
+
+        AVPlayerViewController *vc = [[AVPlayerViewController alloc] init];
+        vc.player = player;
+        [self presentViewController:vc animated:YES completion:^{
+            [player play];
+        }];
+    }
+}
+
+- (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader
+shouldWaitForResponseToAuthenticationChallenge:(NSURLAuthenticationChallenge *)authenticationChallenge
+{
+    //server trust
+    NSURLProtectionSpace *protectionSpace = authenticationChallenge.protectionSpace;
+    if ([protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
+    {
+        [authenticationChallenge.sender useCredential:[NSURLCredential credentialForTrust:authenticationChallenge.protectionSpace.serverTrust] forAuthenticationChallenge:authenticationChallenge];
+        [authenticationChallenge.sender continueWithoutCredentialForAuthenticationChallenge:authenticationChallenge];
+
+    }
+    else{ // other type: username password, client trust..
+    }
+    return YES;
+}
+
+-(void)itemDidFinishPlaying:(NSNotification *)notification {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

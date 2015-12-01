@@ -9,14 +9,23 @@
 @property (nonatomic) BOOL tvOn;
 
 @property (nonatomic) NSString *pauseStatus;
+@property (nonatomic) NSString *fastForwardStatus;
 @property (nonatomic) BOOL isMuted;
 @property (nonatomic) int volume;
+@property (nonatomic) BOOL hideVolume;
+@property (nonatomic) BOOL hideInput;
 @property (nonatomic) int targetVolume;
 @property (nonatomic, strong) NSString *input;
 
 @property (weak, nonatomic) IBOutlet UIButton *locationSelector;
 @property (weak, nonatomic) IBOutlet UIButton *playpauseButton;
+@property (weak, nonatomic) IBOutlet UIButton *fastForwardButton;
 @property (weak, nonatomic) IBOutlet UILabel *volumeLabel;
+@property (weak, nonatomic) IBOutlet UIButton *volume50Button;
+@property (weak, nonatomic) IBOutlet UIButton *volume100Button;
+@property (weak, nonatomic) IBOutlet UIButton *volume75Button;
+@property (weak, nonatomic) IBOutlet UIButton *volume25Button;
+@property (weak, nonatomic) IBOutlet UIButton *muteButton;
 
 @property (weak, nonatomic) IBOutlet UILabel *rcaLabel;
 @property (weak, nonatomic) IBOutlet UILabel *piLabel;
@@ -34,12 +43,14 @@
         self.title = @"Controls";
         [self setTvOn:NO animated:NO];
         [self setPauseStatus:@"play"];
+        [self setFastForwardStatus:@"show"];
         self.input = @"Pi";
         self.volume = self.targetVolume = 50;
         self.isMuted = NO;
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pauseStatusDidChange:) name:PMCPauseStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(fastForwardStatusDidChange:) name:PMCFastForwardStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(volumeStatusDidChange:) name:PMCVolumeStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputStatusDidChange:) name:PMCInputStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(televisionPowerDidChange:) name:PMCTVPowerStatusNotification object:nil];
@@ -51,6 +62,7 @@
 -(void)viewWillAppear:(BOOL)animated {
     [self setTvOn:self.tvOn animated:NO];
     [self refreshPauseStatus];
+    [self refreshFastForwardStatus];
     [self refreshVolumeLabel];
     [self refreshInputButtons];
 
@@ -67,13 +79,6 @@
 -(IBAction)stopPlaying { [self sendMethodToCurrent:@"STOP"]; }
 
 -(IBAction)playPause {
-    if ([self.pauseStatus isEqualToString:@"play"]) {
-        [self setPauseStatus:@"pause"];
-    }
-    else if ([self.pauseStatus isEqualToString:@"pause"]) {
-        [self setPauseStatus:@"play"];
-    }
-
     [self sendMethodToCurrent:@"PLAYPAUSE"];
 }
 
@@ -126,18 +131,47 @@
     }
 }
 
+-(void)refreshFastForwardStatus {
+    NSString *fastForwardStatus = self.fastForwardStatus;
+    if ([fastForwardStatus isEqualToString:@"show"]) {
+        self.fastForwardButton.hidden = NO;
+    }
+    else if ([fastForwardStatus isEqualToString:@"hide"]) {
+        self.fastForwardButton.hidden = YES;
+    }
+}
+
 -(void)setPauseStatus:(NSString *)pauseStatus {
     _pauseStatus = pauseStatus;
     [self refreshPauseStatus];
 }
 
 -(void)pauseStatusDidChange:(NSNotification *)notification {
-    [self setPauseStatus:notification.userInfo[@"show"]];
+    [self setPauseStatus:notification.userInfo[@"status"]];
+}
+
+-(void)setFastForwardStatus:(NSString *)fastForwardStatus {
+    _fastForwardStatus = fastForwardStatus;
+    [self refreshFastForwardStatus];
+}
+
+-(void)fastForwardStatusDidChange:(NSNotification *)notification {
+    [self setFastForwardStatus:notification.userInfo[@"status"]];
 }
 
 -(void)refreshVolumeLabel {
-    NSString *vol = self.volume == self.targetVolume ? [@(self.volume) stringValue] : [NSString stringWithFormat:@"%d → %d", self.volume, self.targetVolume];
-    self.volumeLabel.text = [NSString stringWithFormat:@"Volume: %@", self.isMuted ? @"Mute" : vol];
+    if (self.hideVolume) {
+        self.volumeLabel.hidden = YES;
+        self.muteButton.hidden = YES;
+        self.volume25Button.hidden = YES;
+        self.volume50Button.hidden = YES;
+        self.volume75Button.hidden = YES;
+        self.volume100Button.hidden = YES;
+    }
+    else {
+        NSString *vol = self.volume == self.targetVolume ? [@(self.volume) stringValue] : [NSString stringWithFormat:@"%d → %d", self.volume, self.targetVolume];
+        self.volumeLabel.text = [NSString stringWithFormat:@"Volume: %@", self.isMuted ? @"Mute" : vol];
+    }
 }
 
 -(void)setVolume:(int)volume {
@@ -156,27 +190,43 @@
 }
 
 -(void)volumeStatusDidChange:(NSNotification *)notification {
-    [self setVolume:[notification.userInfo[@"volume"] intValue]];
-    [self setIsMuted:[notification.userInfo[@"mute"] boolValue]];
-
-    if (notification.userInfo[@"target"]) {
-        [self setTargetVolume:[notification.userInfo[@"target"] intValue]];
+    if ([notification.userInfo[@"hide"] boolValue]) {
+        self.hideVolume = YES;
+        [self refreshVolumeLabel];
     }
     else {
-        [self setTargetVolume:self.volume];
+        [self setVolume:[notification.userInfo[@"volume"] intValue]];
+        [self setIsMuted:[notification.userInfo[@"mute"] boolValue]];
+
+        if (notification.userInfo[@"target"]) {
+            [self setTargetVolume:[notification.userInfo[@"target"] intValue]];
+        }
+        else {
+            [self setTargetVolume:self.volume];
+        }
     }
 }
 
 -(void)refreshInputButtons {
-    NSString *input = self.input;
+    if (self.hideInput) {
+        self.rcaButton.hidden     = YES;
+        self.piButton.hidden      = YES;
+        self.appleTvButton.hidden = YES;
+        self.rcaLabel.hidden      = YES;
+        self.piLabel.hidden       = YES;
+        self.appleTvLabel.hidden  = YES;
+    }
+    else {
+        NSString *input = self.input;
 
-    self.rcaButton.hidden     = [input isEqualToString:@"RCA"];
-    self.piButton.hidden      = [input isEqualToString:@"Pi"];
-    self.appleTvButton.hidden = [input isEqualToString:@"AppleTV"];
+        self.rcaButton.hidden     = [input isEqualToString:@"RCA"];
+        self.piButton.hidden      = [input isEqualToString:@"Pi"];
+        self.appleTvButton.hidden = [input isEqualToString:@"AppleTV"];
 
-    self.rcaLabel.hidden      = !self.rcaButton.hidden;
-    self.piLabel.hidden       = !self.piButton.hidden;
-    self.appleTvLabel.hidden  = !self.appleTvButton.hidden;
+        self.rcaLabel.hidden      = !self.rcaButton.hidden;
+        self.piLabel.hidden       = !self.piButton.hidden;
+        self.appleTvLabel.hidden  = !self.appleTvButton.hidden;
+    }
 }
 
 -(void)setInput:(NSString *)input {
@@ -185,8 +235,14 @@
 }
 
 -(void)inputStatusDidChange:(NSNotification *)notification {
-    NSString *input = notification.userInfo[@"input"];
-    [self setInput:input];
+    if ([notification.userInfo[@"hide"] boolValue]) {
+        self.hideInput = YES;
+        [self refreshInputButtons];
+    }
+    else {
+        NSString *input = notification.userInfo[@"input"];
+        [self setInput:input];
+    }
 }
 
 -(void)sendInput:(NSString *)input {
@@ -260,7 +316,7 @@
 }
 
 -(void)televisionPowerDidChange:(NSNotification *)notification {
-    if ([notification.userInfo[@"on"] boolValue]) {
+    if ([notification.userInfo[@"is_on"] boolValue]) {
         [self setTvOn:YES animated:YES];
     }
     else {
