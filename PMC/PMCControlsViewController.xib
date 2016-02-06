@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9059" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PMCControlsViewController">
@@ -32,6 +32,29 @@
             <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C7t-am-rGp" userLabel="TV Off">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="474"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Itr-9c-f4t">
+                            <rect key="frame" x="128" y="205" width="64" height="64"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="64" id="PUD-ZW-dSg"/>
+                                <constraint firstAttribute="width" constant="64" id="kW1-Tr-cXS"/>
+                            </constraints>
+                            <state key="normal" image="Play Circle">
+                                <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                            </state>
+                            <connections>
+                                <action selector="turnTVOn:" destination="-1" eventType="touchUpInside" id="M7U-oF-qNA"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="centerX" secondItem="Itr-9c-f4t" secondAttribute="centerX" id="55Y-GD-zgJ"/>
+                        <constraint firstAttribute="centerY" secondItem="Itr-9c-f4t" secondAttribute="centerY" id="LBb-bj-G5A"/>
+                    </constraints>
+                </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pax-Ly-Zli" userLabel="TV On">
                     <rect key="frame" x="0.0" y="0.0" width="320" height="474"/>
                     <subviews>
@@ -236,29 +259,6 @@
                         <constraint firstItem="MIL-dK-4Pd" firstAttribute="width" secondItem="Kza-fZ-2dG" secondAttribute="width" id="yD0-9V-6rW"/>
                         <constraint firstItem="9D9-n2-p8w" firstAttribute="bottom" secondItem="MIL-dK-4Pd" secondAttribute="bottom" id="z0s-0w-jpG"/>
                         <constraint firstItem="Fjt-Ny-BUs" firstAttribute="leading" secondItem="MIL-dK-4Pd" secondAttribute="trailing" id="zCP-aN-hty"/>
-                    </constraints>
-                </view>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C7t-am-rGp" userLabel="TV Off">
-                    <rect key="frame" x="0.0" y="0.0" width="320" height="474"/>
-                    <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Itr-9c-f4t">
-                            <rect key="frame" x="128" y="205" width="64" height="64"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="64" id="PUD-ZW-dSg"/>
-                                <constraint firstAttribute="width" constant="64" id="kW1-Tr-cXS"/>
-                            </constraints>
-                            <state key="normal" image="Play Circle">
-                                <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                            </state>
-                            <connections>
-                                <action selector="turnTVOn:" destination="-1" eventType="touchUpInside" id="M7U-oF-qNA"/>
-                            </connections>
-                        </button>
-                    </subviews>
-                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    <constraints>
-                        <constraint firstAttribute="centerX" secondItem="Itr-9c-f4t" secondAttribute="centerX" id="55Y-GD-zgJ"/>
-                        <constraint firstAttribute="centerY" secondItem="Itr-9c-f4t" secondAttribute="centerY" id="LBb-bj-G5A"/>
                     </constraints>
                 </view>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aU0-Lm-PLn">

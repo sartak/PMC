@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="8191" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8154"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
@@ -99,7 +99,9 @@
                 </constraints>
             </tableViewCellContentView>
             <connections>
+                <outlet property="enqueuedIndicator" destination="VXU-TH-oiw" id="L4D-hD-ifX"/>
                 <outlet property="identifierLabel" destination="bNG-N3-XHB" id="Rdb-e8-jpe"/>
+                <outlet property="playingIndicator" destination="iM4-0E-e0N" id="aoQ-Gr-B33"/>
                 <outlet property="playtimeLabel" destination="hFo-Ta-XSz" id="n51-52-XKK"/>
                 <outlet property="titleLabel" destination="k3W-SP-qtg" id="XCa-OS-Ty2"/>
             </connections>
