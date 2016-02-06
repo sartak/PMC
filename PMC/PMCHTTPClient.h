@@ -10,6 +10,7 @@ extern NSString * const PMCInputStatusNotification;
 extern NSString * const PMCMediaStartedNotification;
 extern NSString * const PMCMediaFinishedNotification;
 extern NSString * const PMCQueueChangeNotification;
+extern NSString * const PMCAudioDidChangeNotification;
 
 @property (nonatomic, strong) NSDictionary *currentLocation;
 

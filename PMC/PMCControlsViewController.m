@@ -16,6 +16,8 @@
 @property (nonatomic) BOOL hideInput;
 @property (nonatomic) int targetVolume;
 @property (nonatomic, strong) NSString *input;
+@property (nonatomic, strong) NSArray *availableAudio;
+@property (nonatomic, strong) NSDictionary *selectedAudio;
 
 @property (weak, nonatomic) IBOutlet UIButton *locationSelector;
 @property (weak, nonatomic) IBOutlet UIButton *playpauseButton;
@@ -26,6 +28,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *volume75Button;
 @property (weak, nonatomic) IBOutlet UIButton *volume25Button;
 @property (weak, nonatomic) IBOutlet UIButton *muteButton;
+@property (weak, nonatomic) IBOutlet UIButton *audioButton;
 
 @property (weak, nonatomic) IBOutlet UILabel *rcaLabel;
 @property (weak, nonatomic) IBOutlet UILabel *piLabel;
@@ -54,6 +57,7 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(volumeStatusDidChange:) name:PMCVolumeStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputStatusDidChange:) name:PMCInputStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(televisionPowerDidChange:) name:PMCTVPowerStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioDidChange:) name:PMCAudioDidChangeNotification object:nil];
 
     }
     return self;
@@ -65,6 +69,7 @@
     [self refreshFastForwardStatus];
     [self refreshVolumeLabel];
     [self refreshInputButtons];
+    [self refreshAudioButton];
 
     self.locationSelector.hidden = [[PMCHTTPClient locations] count] == 1;
     [self setLocationLabel:[PMCHTTPClient sharedClient].currentLocation[@"label"]];
@@ -246,6 +251,33 @@
     }
 }
 
+-(void)audioDidChange:(NSNotification *)notification {
+    self.selectedAudio = notification.userInfo[@"selected"];
+    self.availableAudio = notification.userInfo[@"available"];
+
+    [self refreshAudioButton];
+}
+
+-(void)refreshAudioButton {
+    if (self.availableAudio && self.availableAudio.count > 0) {
+        NSString *label = self.selectedAudio[@"label"];
+        NSLog(@"%@", label);
+
+        [self.audioButton setTitle:label forState:UIControlStateNormal];
+        self.audioButton.hidden = NO;
+        if (self.availableAudio.count == 1) {
+            [self.audioButton setEnabled:NO];
+        }
+        else {
+            [self.audioButton setEnabled:YES];
+        }
+    }
+    else {
+        self.audioButton.hidden = YES;
+        [self.audioButton setTitle:@"" forState:UIControlStateNormal];
+    }
+}
+
 -(void)sendInput:(NSString *)input {
     [[PMCHTTPClient sharedClient] sendMethod:@"PUT" toEndpoint:@"/television/input" withParams:@{@"input": input} completion:nil];
     [self setInput:input];
@@ -287,6 +319,27 @@
 
 - (IBAction)setVolume100:(id)sender {
     [self sendVolume:100];
+}
+
+- (IBAction)changeAudio:(id)sender {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                   message:@"Select a track"
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+
+    for (NSDictionary *audio in self.availableAudio) {
+        UIAlertAction *action = [UIAlertAction actionWithTitle:audio[@"label"]
+                                                         style:UIAlertActionStyleDefault
+                                                       handler:^(UIAlertAction * action) {
+                                                           self.selectedAudio = audio;
+                                                           [self refreshAudioButton];
+                                                           [[PMCHTTPClient sharedClient] sendMethod:@"PUT" toEndpoint:@"/current/audio" withParams:@{@"track": [audio[@"id"] stringValue]} completion:nil];
+                                                       }];
+        [alert addAction:action];
+    }
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 -(void)setTvOn:(BOOL)tvOn animated:(BOOL)animated {

@@ -11,6 +11,7 @@ NSString * const PMCTVPowerStatusNotification = @"PMCTVPowerStatusNotification";
 NSString * const PMCMediaStartedNotification = @"PMCMediaStartedNotification";
 NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
+NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification";
 
 @interface PMCHTTPClient () <NSURLConnectionDataDelegate>
 
@@ -277,6 +278,9 @@ NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
     }
     else if ([type isEqualToString:@"connected"]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:PMCConnectedStatusNotification object:self userInfo:event];
+    }
+    else if ([type isEqualToString:@"audio"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:PMCAudioDidChangeNotification object:self userInfo:event];
     }
     else if ([type isEqualToString:@"subscriber"]) {
         // ignore. I'm self-centered

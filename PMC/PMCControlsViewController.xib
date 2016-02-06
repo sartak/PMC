@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
@@ -9,6 +9,7 @@
             <connections>
                 <outlet property="appleTvButton" destination="49b-PO-pVs" id="BQ5-qb-PsF"/>
                 <outlet property="appleTvLabel" destination="cjj-Jh-hqW" id="sYn-zC-zHI"/>
+                <outlet property="audioButton" destination="xPq-8V-iZz" id="hKJ-BP-X4e"/>
                 <outlet property="fastForwardButton" destination="xOQ-Zh-nsJ" id="YVi-AM-Qz5"/>
                 <outlet property="locationSelector" destination="aU0-Lm-PLn" id="azm-vb-qPN"/>
                 <outlet property="muteButton" destination="9D9-n2-p8w" id="KAC-Qz-0ib"/>
@@ -90,13 +91,13 @@
                             </connections>
                         </button>
                         <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RCA" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c5n-P8-ttV">
-                            <rect key="frame" x="22" y="139" width="36" height="20.5"/>
+                            <rect key="frame" x="22" y="139" width="35.5" height="20.5"/>
                             <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pi" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mge-WS-u7h">
-                            <rect key="frame" x="152" y="139" width="15.5" height="20.5"/>
+                            <rect key="frame" x="152" y="139" width="16" height="20.5"/>
                             <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
@@ -201,6 +202,13 @@
                             <rect key="frame" x="57" y="210" width="29" height="30"/>
                             <color key="backgroundColor" red="0.23903394680000001" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         </view>
+                        <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xPq-8V-iZz">
+                            <rect key="frame" x="140" y="248" width="40" height="30"/>
+                            <state key="normal" title="Audio"/>
+                            <connections>
+                                <action selector="changeAudio:" destination="-1" eventType="touchUpInside" id="fof-BS-H58"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
@@ -224,6 +232,7 @@
                         <constraint firstItem="ICI-xT-d67" firstAttribute="centerX" secondItem="c5n-P8-ttV" secondAttribute="centerX" id="Ryj-Mm-sSW"/>
                         <constraint firstItem="Kza-fZ-2dG" firstAttribute="leading" secondItem="9No-mC-N21" secondAttribute="trailing" id="SG3-oD-mh6"/>
                         <constraint firstItem="9D9-n2-p8w" firstAttribute="top" secondItem="tQ8-OF-9e9" secondAttribute="top" id="Szo-af-g1a"/>
+                        <constraint firstItem="xPq-8V-iZz" firstAttribute="top" secondItem="Kza-fZ-2dG" secondAttribute="bottom" constant="8" id="U0e-LP-Kqg"/>
                         <constraint firstAttribute="trailing" secondItem="jO0-gw-Xku" secondAttribute="trailing" constant="8" id="UhS-FD-uQ1"/>
                         <constraint firstAttribute="centerX" secondItem="xOQ-Zh-nsJ" secondAttribute="centerX" id="VOE-Hw-qkb"/>
                         <constraint firstItem="9D9-n2-p8w" firstAttribute="bottom" secondItem="tQ8-OF-9e9" secondAttribute="bottom" id="XGq-4c-E83"/>
@@ -239,6 +248,7 @@
                         <constraint firstItem="Hov-xE-OEE" firstAttribute="leading" secondItem="9D9-n2-p8w" secondAttribute="trailing" id="fHa-aa-4Zt"/>
                         <constraint firstItem="Mge-WS-u7h" firstAttribute="centerY" secondItem="ICI-xT-d67" secondAttribute="centerY" id="gIf-Iy-0y1"/>
                         <constraint firstItem="jaT-eP-YE3" firstAttribute="centerX" secondItem="UGw-sW-dUH" secondAttribute="centerX" id="hZ8-zQ-cu4"/>
+                        <constraint firstItem="xPq-8V-iZz" firstAttribute="centerX" secondItem="pax-Ly-Zli" secondAttribute="centerX" id="heU-r0-7XA"/>
                         <constraint firstItem="9D9-n2-p8w" firstAttribute="top" secondItem="MIL-dK-4Pd" secondAttribute="top" id="iQI-nB-rL4"/>
                         <constraint firstItem="9D9-n2-p8w" firstAttribute="bottom" secondItem="Kza-fZ-2dG" secondAttribute="bottom" id="iaA-B1-L1F"/>
                         <constraint firstItem="jaT-eP-YE3" firstAttribute="centerX" secondItem="xOQ-Zh-nsJ" secondAttribute="centerX" id="k0c-i4-jsB"/>
