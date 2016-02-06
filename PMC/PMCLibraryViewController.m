@@ -317,8 +317,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         cell.enqueuedIndicator.hidden = NO;
     }
     else {
-        cell.playingIndicator.hidden = NO;
-        cell.enqueuedIndicator.hidden = NO;
+        cell.playingIndicator.hidden = YES;
+        cell.enqueuedIndicator.hidden = YES;
     }
 
     if (![[game valueForKeyPath:@"streamable"] boolValue]) {
