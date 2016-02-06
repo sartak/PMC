@@ -102,7 +102,6 @@ NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 
 -(NSMutableURLRequest *)requestWithEndpoint:(NSString *)endpoint method:(NSString *)method {
     NSURL *url = [NSURL URLWithString:[[self host] stringByAppendingString:endpoint]];
-    NSLog(@"%@", url);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request setAllowsCellularAccess:YES];
     [request addValue:[self username] forHTTPHeaderField:@"X-PMC-Username"];
@@ -166,8 +165,6 @@ NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 }
 
 -(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    NSLog(@"didReceive");
-
     // we've bailed out
     if (!self.statusConnection) {
         return;
@@ -175,8 +172,6 @@ NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 
     NSMutableData *buffer = [self.statusBuffer mutableCopy];
     [buffer appendData:data];
-
-    NSLog(@"%@", [[NSString alloc] initWithData:buffer encoding:NSUTF8StringEncoding]);
 
     while (1) {
         NSRange range = [buffer rangeOfData:[@"\n" dataUsingEncoding:NSUTF8StringEncoding] options:0 range:NSMakeRange(0, buffer.length)];
@@ -243,14 +238,12 @@ NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 // this happens before the didReceiveData callback, which means we don't try to parse the proxy's 502
 // html page as JSON
 -(void)connection:(NSURLConnection *)connection didReceiveResponse:(NSHTTPURLResponse *)response {
-    NSLog(@"%@", response);
     if (response.statusCode != 200) {
         [self resubscribeToStatus];
     }
 }
 
 -(void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    NSLog(@"finished");
     [self resubscribeToStatus];
 }
 
