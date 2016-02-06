@@ -13,7 +13,7 @@
 
 NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotification";
 
-@interface PMCLibraryViewController () <AVAssetResourceLoaderDelegate>
+@interface PMCLibraryViewController ()
 
 @property (nonatomic, strong) NSDictionary *currentRecord;
 @property (nonatomic, strong) NSArray *records;
@@ -470,10 +470,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         NSURL *url = [NSURL URLWithString:endpoint];
         NSLog(@"%@", url);
 
-        AVURLAsset *asset = [AVURLAsset URLAssetWithURL:url options:@{}];
-        [asset.resourceLoader setDelegate:self queue:dispatch_get_main_queue()];
-
-        AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:asset];
+        AVPlayerItem *item = [AVPlayerItem playerItemWithURL:url];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(itemDidFinishPlaying:) name:AVPlayerItemDidPlayToEndTimeNotification object:item];
 
@@ -485,22 +482,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
             [player play];
         }];
     }
-}
-
-- (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader
-shouldWaitForResponseToAuthenticationChallenge:(NSURLAuthenticationChallenge *)authenticationChallenge
-{
-    //server trust
-    NSURLProtectionSpace *protectionSpace = authenticationChallenge.protectionSpace;
-    if ([protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
-    {
-        [authenticationChallenge.sender useCredential:[NSURLCredential credentialForTrust:authenticationChallenge.protectionSpace.serverTrust] forAuthenticationChallenge:authenticationChallenge];
-        [authenticationChallenge.sender continueWithoutCredentialForAuthenticationChallenge:authenticationChallenge];
-
-    }
-    else{ // other type: username password, client trust..
-    }
-    return YES;
 }
 
 -(void)itemDidFinishPlaying:(NSNotification *)notification {

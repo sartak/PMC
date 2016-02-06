@@ -25,8 +25,6 @@
 		CB58075D194E876200DF387D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CB58075C194E876200DF387D /* main.m */; };
 		CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CB580760194E876200DF387D /* PMCAppDelegate.m */; };
 		CB580763194E876200DF387D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB580762194E876200DF387D /* Images.xcassets */; };
-		CB6885FF1B79BFF10064F761 /* RNPinnedCertValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = CB6885FE1B79BFF10064F761 /* RNPinnedCertValidator.m */; };
-		CB6886001B79C0C10064F761 /* pmc.sartak.org.cer in Resources */ = {isa = PBXBuildFile; fileRef = CB6885FC1B79BF9C0064F761 /* pmc.sartak.org.cer */; };
 		CBA7C3881BAB9CFA00EB362C /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CBA7C3871BAB9CFA00EB362C /* Launch.storyboard */; };
 		CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */; };
 		CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */; };
@@ -65,9 +63,6 @@
 		CB58075F194E876200DF387D /* PMCAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMCAppDelegate.h; sourceTree = "<group>"; };
 		CB580760194E876200DF387D /* PMCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMCAppDelegate.m; sourceTree = "<group>"; };
 		CB580762194E876200DF387D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		CB6885FC1B79BF9C0064F761 /* pmc.sartak.org.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = pmc.sartak.org.cer; sourceTree = "<group>"; };
-		CB6885FD1B79BFF10064F761 /* RNPinnedCertValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNPinnedCertValidator.h; sourceTree = "<group>"; };
-		CB6885FE1B79BFF10064F761 /* RNPinnedCertValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNPinnedCertValidator.m; sourceTree = "<group>"; };
 		CBA7C3871BAB9CFA00EB362C /* Launch.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
 		CBE7FAD1194E8A1900311B7E /* PMCLibraryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCLibraryViewController.h; sourceTree = "<group>"; };
 		CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCLibraryViewController.m; sourceTree = "<group>"; };
@@ -106,8 +101,6 @@
 		CB580756194E876200DF387D /* PMC */ = {
 			isa = PBXGroup;
 			children = (
-				CB6885FD1B79BFF10064F761 /* RNPinnedCertValidator.h */,
-				CB6885FE1B79BFF10064F761 /* RNPinnedCertValidator.m */,
 				CB58075F194E876200DF387D /* PMCAppDelegate.h */,
 				CB580760194E876200DF387D /* PMCAppDelegate.m */,
 				CB35204319FAC9A100FA8FD2 /* PMCHTTPClient.h */,
@@ -148,7 +141,6 @@
 			isa = PBXGroup;
 			children = (
 				CBA7C3871BAB9CFA00EB362C /* Launch.storyboard */,
-				CB6885FC1B79BF9C0064F761 /* pmc.sartak.org.cer */,
 				CB580758194E876200DF387D /* PMC-Info.plist */,
 				CB580759194E876200DF387D /* InfoPlist.strings */,
 				CB58075C194E876200DF387D /* main.m */,
@@ -214,7 +206,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CB6886001B79C0C10064F761 /* pmc.sartak.org.cer in Resources */,
 				CB58075B194E876200DF387D /* InfoPlist.strings in Resources */,
 				CB40C36F197DD7F000E8077E /* PMCControlsViewController.xib in Resources */,
 				CB580763194E876200DF387D /* Images.xcassets in Resources */,
@@ -241,7 +232,6 @@
 				CB031ABB1AB66B2E00A52927 /* PMCGameTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB24721B19FB407200D9FE0D /* PMCFiveStarTableViewCell.m in Sources */,
-				CB6885FF1B79BFF10064F761 /* RNPinnedCertValidator.m in Sources */,
 				CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */,
 				CB35204519FAC9A100FA8FD2 /* PMCHTTPClient.m in Sources */,
 				CB28F3E51984403300EB184A /* PMCTreeTableViewCell.m in Sources */,

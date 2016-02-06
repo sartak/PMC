@@ -1,6 +1,5 @@
 #import "PMCHTTPClient.h"
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import "RNPinnedCertValidator.h"
 
 NSString * const PMCHostDidChangeNotification = @"PMCHostDidChangeNotification";
 NSString * const PMCConnectedStatusNotification = @"PMCConnectedStatusNotification";
@@ -13,7 +12,7 @@ NSString * const PMCMediaStartedNotification = @"PMCMediaStartedNotification";
 NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 
-@interface PMCHTTPClient () <NSURLConnectionDataDelegate, NSURLSessionDelegate>
+@interface PMCHTTPClient () <NSURLConnectionDataDelegate>
 
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSURLConnection *statusConnection;
@@ -39,7 +38,7 @@ NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 -(instancetype)init {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
         self.session = session;
 
         [NSNotificationCenter.defaultCenter addObserverForName:CTRadioAccessTechnologyDidChangeNotification
@@ -308,38 +307,6 @@ NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
         NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
         self.statusConnection = connection;
     });
-}
-
-- (void)connection:(NSURLConnection *)connection
-willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
-    RNPinnedCertValidator *validator = [[RNPinnedCertValidator alloc] initWithCertificatePath:[[NSBundle mainBundle] pathForResource:@"pmc.sartak.org" ofType:@"cer"]];
-    [validator validateChallenge:challenge];
-}
-
-- (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler{
-
-    if ([[[challenge protectionSpace] authenticationMethod] isEqualToString: NSURLAuthenticationMethodServerTrust]) {
-        SecTrustRef serverTrust = [[challenge protectionSpace] serverTrust];
-        (void) SecTrustEvaluate(serverTrust, NULL);
-        NSData *localCertificateData = [NSData dataWithContentsOfFile: [[NSBundle mainBundle]
-                                                                        pathForResource:@"pmc.sartak.org"
-                                                                        ofType: @"crt"]];
-        SecCertificateRef remoteVersionOfServerCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0);
-        CFDataRef remoteCertificateData = SecCertificateCopyData(remoteVersionOfServerCertificate);
-        BOOL certificatesAreTheSame = [localCertificateData isEqualToData: (__bridge NSData *)remoteCertificateData];
-        CFRelease(remoteCertificateData);
-        NSURLCredential* cred  = [NSURLCredential credentialForTrust: serverTrust];
-#ifdef DEBUG
-        certificatesAreTheSame = YES;
-#endif
-
-        if (certificatesAreTheSame) {
-            completionHandler(NSURLSessionAuthChallengeUseCredential,cred);
-        }
-        else {
-            completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace,nil);
-        }
-    }
 }
 
 @end
