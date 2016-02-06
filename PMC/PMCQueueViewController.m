@@ -2,6 +2,7 @@
 #import "PMCVideoTableViewCell.h"
 #import "PMCGameTableViewCell.h"
 #import "PMCHTTPClient.h"
+#import "PMCLibraryViewController.h"
 
 NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification";
 
@@ -10,6 +11,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
 @property (nonatomic, strong) NSArray *media;
 @property (nonatomic, strong) NSDictionary *currentMedia;
 @property (nonatomic, strong) NSTimer *notificationRefreshTimer;
+@property (nonatomic, strong) NSString *currentLanguage;
 
 @end
 
@@ -18,11 +20,14 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
 -(id)init {
     if (self = [super init]) {
         self.title = @"Queue";
+        self.currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
+
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCMediaStartedNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCMediaFinishedNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange) name:PMCQueueChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didConnect) name:PMCConnectedStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(languageDidChange:) name:PMCLanguageDidChangeNotification object:nil];
     }
 
     return self;
@@ -34,6 +39,36 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
     }
 
     self.notificationRefreshTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(notificationRefresh) userInfo:nil repeats:NO];
+}
+
+-(void)languageDidChange:(NSNotification *)notification {
+    self.currentLanguage = notification.userInfo[@"new"];
+    [self redrawForLanguageChange];
+}
+
+-(NSString *)extractLabelFromRecord:(NSDictionary *)record {
+    for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
+        NSArray *components = [lang componentsSeparatedByString:@"-"];
+        NSString *keyPath = [@"label." stringByAppendingString:components[0]];
+        id label = [record valueForKeyPath:keyPath];
+        if (label && label != [NSNull null]) {
+            return label;
+        }
+    }
+
+    return [record valueForKeyPath:@"label.en"];
+}
+
+-(void)redrawForLanguageChange {
+    for (UITableViewCell *cell in self.tableView.visibleCells) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+        if (indexPath.section == 0 || indexPath.section == 1) {
+            NSDictionary *record = self.media[indexPath.row];
+            if ([cell respondsToSelector:@selector(titleLabel)]) {
+                [cell setValue:[self extractLabelFromRecord:record] forKeyPath:@"titleLabel.text"];
+            }
+        }
+    }
 }
 
 -(void)notificationRefresh {
@@ -122,26 +157,6 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
     }
 }
 
--(NSString *)currentLanguage { return @"xxx"; }
-
--(NSString *)extractLabelFromRecord:(NSDictionary *)record includeSpaceForTag:(BOOL)extraSpace {
-    for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
-        NSArray *components = [lang componentsSeparatedByString:@"-"];
-        NSString *keyPath = [@"label." stringByAppendingString:components[0]];
-        id label = [record valueForKeyPath:keyPath];
-        if (label && label != [NSNull null]) {
-            if (extraSpace && [record[@"type"] isEqualToString:@"tag"]) {
-                return [NSString stringWithFormat:@"  %@  ", label];
-            }
-            else {
-                return label;
-            }
-        }
-    }
-
-    return nil;
-}
-
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *record;
     BOOL isCurrent = NO;
@@ -172,7 +187,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath isCurrent:(BOOL)isCurrent {
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [self extractLabelFromRecord:video includeSpaceForTag:YES];
+    cell.titleLabel.text = [self extractLabelFromRecord:video];
 
     id identifier = [video valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
@@ -239,7 +254,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForGame:(NSDictionary *)game atIndexPath:(NSIndexPath *)indexPath isCurrent:(BOOL)isCurrent {
     PMCGameTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Game" forIndexPath:indexPath];
 
-    cell.titleLabel.text = [self extractLabelFromRecord:game includeSpaceForTag:YES];
+    cell.titleLabel.text = [self extractLabelFromRecord:game];
 
     id identifier = [game valueForKeyPath:@"identifier"];
     if (!identifier || identifier == [NSNull null]) {
