@@ -299,13 +299,13 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
 }
 
 -(BOOL)isPlayingMedia:(NSDictionary *)media {
-    return [[media valueForKey:@"id"] isEqual:[self.currentMedia valueForKey:@"id"]];
+    return [[media valueForKey:@"id"] intValue] == [[self.currentMedia valueForKey:@"id"] intValue];
 }
 
 -(BOOL)hasQueuedMedia:(NSDictionary *)media {
-    NSNumber *needle = [media valueForKey:@"id"];
+    int needle = [[media valueForKey:@"id"] intValue];
     for (NSDictionary *queue in self.media) {
-        if ([needle isEqual:[queue valueForKey:@"id"]]) {
+        if (needle == [[queue valueForKey:@"id"] intValue]) {
             return YES;
         }
     }
