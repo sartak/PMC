@@ -66,6 +66,7 @@
     [self refreshVolumeLabel];
     [self refreshInputButtons];
 
+    self.locationSelector.hidden = [[PMCHTTPClient locations] count] == 1;
     [self setLocationLabel:[PMCHTTPClient sharedClient].currentLocation[@"label"]];
 }
 
