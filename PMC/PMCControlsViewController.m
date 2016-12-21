@@ -23,6 +23,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *playpauseButton;
 @property (weak, nonatomic) IBOutlet UIButton *fastForwardButton;
 @property (weak, nonatomic) IBOutlet UILabel *volumeLabel;
+@property (weak, nonatomic) IBOutlet UIButton *volumeUpButton;
+@property (weak, nonatomic) IBOutlet UIButton *volumeDownButton;
 @property (weak, nonatomic) IBOutlet UIButton *volume50Button;
 @property (weak, nonatomic) IBOutlet UIButton *volume100Button;
 @property (weak, nonatomic) IBOutlet UIButton *volume75Button;
@@ -108,6 +110,10 @@
 
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
 
+    alert.popoverPresentationController.sourceView = self.view;
+    alert.popoverPresentationController.sourceRect = self.locationSelector.frame;
+    [alert.popoverPresentationController setPermittedArrowDirections:UIPopoverArrowDirectionDown];
+
     [self presentViewController:alert animated:YES completion:nil];
 }
 
@@ -173,8 +179,19 @@
         self.volume50Button.hidden = YES;
         self.volume75Button.hidden = YES;
         self.volume100Button.hidden = YES;
+        self.volumeUpButton.hidden = YES;
+        self.volumeDownButton.hidden = YES;
     }
     else {
+        self.volumeLabel.hidden = NO;
+        self.muteButton.hidden = NO;
+        self.volume25Button.hidden = NO;
+        self.volume50Button.hidden = NO;
+        self.volume75Button.hidden = NO;
+        self.volume100Button.hidden = NO;
+        self.volumeUpButton.hidden = NO;
+        self.volumeDownButton.hidden = NO;
+
         NSString *vol = self.volume == self.targetVolume ? [@(self.volume) stringValue] : [NSString stringWithFormat:@"%d → %d", self.volume, self.targetVolume];
         self.volumeLabel.text = [NSString stringWithFormat:@"Volume: %@", self.isMuted ? @"Mute" : vol];
     }
@@ -197,10 +214,12 @@
 
 -(void)volumeStatusDidChange:(NSNotification *)notification {
     if ([notification.userInfo[@"hide"] boolValue]) {
-        self.hideVolume = YES;
+        self.hideVolume = [notification.userInfo[@"hide"] boolValue];
         [self refreshVolumeLabel];
     }
     else {
+        self.hideVolume = NO;
+
         [self setVolume:[notification.userInfo[@"volume"] intValue]];
         [self setIsMuted:[notification.userInfo[@"mute"] boolValue]];
 
@@ -246,6 +265,7 @@
         [self refreshInputButtons];
     }
     else {
+        self.hideInput = NO;
         NSString *input = notification.userInfo[@"input"];
         [self setInput:input];
     }
@@ -300,6 +320,14 @@
     [self setTargetVolume:volume];
 }
 
+-(IBAction)sendVolumeUp {
+    [[PMCHTTPClient sharedClient] sendMethod:@"UP" toEndpoint:@"/television/volume" completion:nil];
+}
+
+-(IBAction)sendVolumeDown {
+    [[PMCHTTPClient sharedClient] sendMethod:@"DOWN" toEndpoint:@"/television/volume" completion:nil];
+}
+
 - (IBAction)sendMute:(id)sender {
     [[PMCHTTPClient sharedClient] sendMethod:@"MUTE" toEndpoint:@"/television/volume" completion:nil];
     [self setIsMuted:true];
@@ -338,6 +366,10 @@
     }
 
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    alert.popoverPresentationController.sourceView = self.view;
+    alert.popoverPresentationController.sourceRect = self.audioButton.frame;
+    [alert.popoverPresentationController setPermittedArrowDirections:UIPopoverArrowDirectionUp];
 
     [self presentViewController:alert animated:YES completion:nil];
 }

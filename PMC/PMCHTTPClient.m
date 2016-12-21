@@ -1,5 +1,7 @@
 #import "PMCHTTPClient.h"
+#import "PMCDownloadManager.h"
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
+@import SystemConfiguration.CaptiveNetwork;
 
 NSString * const PMCHostDidChangeNotification = @"PMCHostDidChangeNotification";
 NSString * const PMCConnectedStatusNotification = @"PMCConnectedStatusNotification";
@@ -13,13 +15,14 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification";
 
-@interface PMCHTTPClient () <NSURLConnectionDataDelegate>
+@interface PMCHTTPClient () <NSURLConnectionDataDelegate, NSURLSessionDownloadDelegate>
 
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSURLConnection *statusConnection;
 @property (nonatomic, strong) NSData *statusBuffer;
 @property (nonatomic) int statusBackoffExponent;
 @property (nonatomic, strong) NSTimer *resubscribeTimer;
+@property (nonatomic, strong) NSMapTable *taskInfo;
 
 @end
 
@@ -39,17 +42,23 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
 -(instancetype)init {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
         self.session = session;
+
+        self.currentlyDownloading = [NSMutableDictionary dictionary];
+
+        self.taskInfo = [NSMapTable mapTableWithKeyOptions:NSMapTableWeakMemory valueOptions:NSMapTableStrongMemory];
 
         [NSNotificationCenter.defaultCenter addObserverForName:CTRadioAccessTechnologyDidChangeNotification
                                                         object:nil
                                                          queue:nil
                                                     usingBlock:^(NSNotification *note) {
-                                                        NSLog(@"radio changed");
+                                                        NSLog(@"radio changed: %@", note.userInfo);
                                                         self.statusBackoffExponent = 0;
                                                         [self resubscribeToStatus];
                                                     }];
+
+        [self convertProvisionalViewing];
 
         [self subscribeToStatus];
     }
@@ -57,26 +66,84 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
 }
 
 +(NSArray *)locations {
-    return @[
-             @{@"label": @"Living Room", @"host": @"https://pmc.sartak.org/" },
-             @{@"label": @"Bedroom", @"host": @"http://pmc2.sartak.org" },
-             @{@"label": @"BPS", @"host": @"http://bloc.local:5000" },
-             ];
+    NSArray *locations;
+
+    NSString *network = [self networkSSID];
+
+    if ([network isEqualToString:@"wifi.sartak.org"]) {
+        locations = @[
+                 @{@"label": @"Living Room", @"host": @"http://junction.local:5000", @"id":@"junction" },
+                 @{@"label": @"Bedroom", @"host": @"http://tleilax.local:5000", @"id":@"tleilax" },
+                 ];
+    }
+    else {
+        locations = @[
+                 @{@"label": @"Living Room", @"host": @"https://pmc.sartak.org", @"id":@"junction" },
+                 @{@"label": @"Bedroom", @"host": @"https://pmc2.sartak.org", @"id":@"tleilax" },
+                 //@{@"label": @"Library", @"host": @"http://hampshire.local:5000", @"id":@"hampshire" },
+                 ];
+    }
+
+    if ([network isEqualToString:@"Best Practical"]) {
+        locations = [locations arrayByAddingObject:@{@"label": @"BPS", @"host": @"http://bloc.local:5000", @"id":@"bloc" }];
+    }
+
+    return locations;
 }
 
--(NSString *)username {
++(NSString *)username {
     return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"PMC_USERNAME"];
 }
 
--(NSString *)password {
++(NSString *)password {
     return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"PMC_PASSWORD"];
 }
 
--(NSDictionary *)currentLocation {
-    if (!_currentLocation) {
-        [self setCurrentLocation:[[self class] locations][0]];
++(NSString *)device {
+    return [[UIDevice currentDevice] name];
+}
+
++(NSString *)networkSSID {
+    NSArray *interfaceNames = CFBridgingRelease(CNCopySupportedInterfaces());
+
+    NSDictionary *SSIDInfo;
+    for (NSString *interfaceName in interfaceNames) {
+        SSIDInfo = CFBridgingRelease(
+                                     CNCopyCurrentNetworkInfo((__bridge CFStringRef)interfaceName));
+
+        BOOL isNotEmpty = (SSIDInfo.count > 0);
+        if (isNotEmpty) {
+            break;
+        }
     }
-    return _currentLocation;
+
+    return SSIDInfo[@"SSID"];
+}
+
+-(NSDictionary *)currentLocation {
+    // radio change means we might go from internet -> LAN
+    NSDictionary *match;
+    for (NSDictionary *location in [[self class] locations]) {
+        // got the same host, we're still connected to the same network
+        if ([_currentLocation[@"host"] isEqualToString:location[@"host"]]) {
+            return _currentLocation;
+        }
+        // different host but same id means we should switch to this one
+        else if ([_currentLocation[@"id"] isEqualToString:location[@"id"]]) {
+            match = location;
+        }
+    }
+
+    if (match) {
+        // we didn't match on host but we matched on id so update _currentLocation
+        [self setCurrentLocation:match];
+        return match;
+    }
+    else {
+        // no match, perhaps _currentLocation is empty, so just grab the first location
+        [self setCurrentLocation:[[self class] locations][0]];
+        return _currentLocation;
+    }
 }
 
 -(void)setCurrentLocation:(NSDictionary *)currentLocation {
@@ -92,8 +159,9 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
 
     [self unsubscribeToStatus];
 
+    NSDictionary *old = _currentLocation;
     _currentLocation = currentLocation;
-    [[NSNotificationCenter defaultCenter] postNotificationName:PMCHostDidChangeNotification object:self userInfo:@{@"new":currentLocation}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:PMCHostDidChangeNotification object:self userInfo:@{@"new":currentLocation, @"old":old}];
     [self resubscribeToStatus];
 }
 
@@ -105,17 +173,17 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
     NSURL *url = [NSURL URLWithString:[[self host] stringByAppendingString:endpoint]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request setAllowsCellularAccess:YES];
-    [request addValue:[self username] forHTTPHeaderField:@"X-PMC-Username"];
-    [request addValue:[self password] forHTTPHeaderField:@"X-PMC-Password"];
+    [request addValue:[[self class] username] forHTTPHeaderField:@"X-PMC-Username"];
+    [request addValue:[[self class] password] forHTTPHeaderField:@"X-PMC-Password"];
     request.HTTPMethod = method;
     return request;
 }
 
--(void)sendMethod:(NSString *)method toEndpoint:(NSString *)endpoint completion:(void (^)(NSError *error))completion {
+-(void)sendMethod:(NSString *)method toEndpoint:(NSString *)endpoint completion:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completion {
     [self sendMethod:method toEndpoint:endpoint withParams:nil completion:completion];
 }
 
--(void)sendMethod:(NSString *)method toEndpoint:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(NSError *error))completion {
+-(void)sendMethod:(NSString *)method toEndpoint:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completion {
     NSMutableURLRequest *request = [self requestWithEndpoint:endpoint method:method];
 
     if (params) {
@@ -127,7 +195,11 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
         }];
 
         NSString *query = [parts componentsJoinedByString:@"&"];
-        request.URL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", request.URL, query]];
+        NSString *joiner = @"?";
+        if ([[request.URL description] containsString:@"?"]) {
+            joiner = @"&";
+        }
+        request.URL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@", request.URL, joiner, query]];
     }
 
     NSLog(@"%@ %@", request.HTTPMethod, request.URL);
@@ -138,21 +210,20 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(error);
+                completion(data, response, error);
             });
         }
     }];
     [task resume];
 }
 
--(void)jsonFrom:(NSString *)endpoint completion:(void (^)(id json, NSError *error))completion {
-    NSMutableURLRequest *request = [self requestWithEndpoint:endpoint method:@"GET"];
-
-    NSLog(@"%@ %@", request.HTTPMethod, request.URL);
-
-    NSURLSessionTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+-(void)jsonFrom:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(id json, NSError *error))completion {
+    [self sendMethod:@"GET" toEndpoint:endpoint withParams:params completion:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (error) {
-            NSLog(@"%@", error);
+            if (completion) {
+                completion(nil, error);
+            }
+            return;
         }
 
         id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
@@ -161,8 +232,132 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
                 completion(json, error);
             });
         }
+
     }];
-    [task resume];
+}
+
+-(void)mediaFrom:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(NSArray *records, NSError *error))completion {
+    [self jsonFrom:endpoint withParams:params completion:^(NSArray *records, NSError *error) {
+        for (NSDictionary *record in records) {
+            if ([record[@"type"] isEqualToString:@"tree"]) {
+                continue;
+            }
+            [PMCDownloadManager updateMetadataForMedia:record];
+        }
+        completion(records, error);
+    }];
+}
+
+-(NSURLSessionDownloadTask *)beginDownload:(NSString *)endpoint forMedia:(NSDictionary *)media progress:(void (^)(float progress))progress completion:(void (^)(NSURL *location, NSError *error))completion {
+    NSMutableURLRequest *request = [self requestWithEndpoint:endpoint method:@"GET"];
+    NSLog(@"%@ %@", request.HTTPMethod, request.URL);
+
+    NSDictionary *taskInfo = @{
+                               @"completion":completion,
+                               @"progress":progress,
+                               @"media":media,
+                               };
+    NSURLSessionDownloadTask *download = [self.session downloadTaskWithRequest:request];
+    [self.taskInfo setObject:taskInfo forKey:download];
+    [download resume];
+    return download;
+}
+
+-(NSURLSessionDownloadTask *)downloadMedia:(NSDictionary *)media withAction:(NSDictionary *)action progress:(void (^)(float progress))progress completion:(void (^)(NSURL *location, NSError *error))completion {
+    return [self beginDownload:action[@"url"] forMedia:media progress:progress completion:^(NSURL *location, NSError *error) {
+        if (error) {
+            NSLog(@"%@", error);
+            [PMCDownloadManager downloadFailedForMedia:media withReason:error.localizedDescription];
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(nil, error);
+                });
+            }
+            return;
+        }
+
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSURL *documentsURL = [fileManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask][0];
+        NSURL *subdirURL = [documentsURL URLByAppendingPathComponent:@"downloaded"];
+
+        NSURL *fileURL = [PMCDownloadManager URLForDownloadedMedia:media mustExist:NO];
+
+        if (![fileManager fileExistsAtPath:subdirURL.path]) {
+            NSError *error;
+            [fileManager createDirectoryAtPath:subdirURL.path
+                   withIntermediateDirectories:YES
+                                    attributes:nil
+                                         error:&error];
+            if (error) {
+                NSLog(@"error creating %@: %@", subdirURL.path, error);
+                [PMCDownloadManager downloadFailedForMedia:media withReason:error.localizedDescription];
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(nil, error);
+                    });
+                }
+                return;
+            }
+        }
+
+        NSError *moveError;
+        if (![fileManager moveItemAtURL:location toURL:fileURL error:&moveError]) {
+            NSLog(@"%@", moveError);
+            [PMCDownloadManager downloadFailedForMedia:media withReason:error.localizedDescription];
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(nil, moveError);
+                });
+            }
+            return;
+        }
+
+        [PMCDownloadManager clearFailedDownloadForMedia:media];
+
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(fileURL, nil);
+            });
+        }
+    }];
+}
+
+-(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+    float percent = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
+
+    NSDictionary *taskInfo = [self.taskInfo objectForKey:downloadTask];
+    if (taskInfo && taskInfo[@"progress"]) {
+        void (^progress)(float progress) = taskInfo[@"progress"];
+        progress(percent);
+    }
+}
+
+-(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    if (!error) {
+        return;
+    }
+    
+    NSLog(@"didCompleteWithError");
+    NSDictionary *taskInfo = [self.taskInfo objectForKey:task];
+    if (taskInfo) {
+        if (taskInfo[@"completion"]) {
+            void (^completion)(NSURL *location, NSError *error) = taskInfo[@"completion"];
+            completion(nil, error);
+        }
+        if (taskInfo[@"media"]) {
+            [PMCDownloadManager downloadFailedForMedia:taskInfo[@"media"] withReason:error.localizedDescription];
+        }
+    }
+}
+
+-(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
+    NSLog(@"done downloading to %@", location);
+
+    NSDictionary *taskInfo = [self.taskInfo objectForKey:downloadTask];
+    if (taskInfo && taskInfo[@"completion"]) {
+        void (^completion)(NSURL *location, NSError *error) = taskInfo[@"completion"];
+        completion(location, nil);
+    }
 }
 
 -(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
@@ -303,7 +498,102 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
         NSLog(@"%@ %@", request.HTTPMethod, request.URL);
         NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
         self.statusConnection = connection;
+
+        [self flushSavedViewings];
     });
+}
+
+-(void)setProvisionalViewing:(NSDictionary *)viewing {
+    [[NSUserDefaults standardUserDefaults] setObject:viewing forKey:@"provisionalViewing"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+-(NSDictionary *)provisionalViewing {
+    return [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"provisionalViewing"];
+}
+
+-(void)convertProvisionalViewing {
+    NSDictionary *viewing = [self provisionalViewing];
+    if (viewing) {
+        NSLog(@"converting provisional viewing");
+        [self saveViewingForRetry:viewing];
+        [self setProvisionalViewing:nil];
+    }
+}
+
+-(NSArray *)savedViewings {
+    NSArray *viewings = [[NSUserDefaults standardUserDefaults] arrayForKey:@"viewing"];
+    if (!viewings) {
+        return [NSArray array];
+    }
+    return viewings;
+}
+
+-(void)setSavedViewings:(NSArray *)viewings {
+    [[NSUserDefaults standardUserDefaults] setObject:viewings forKey:@"viewing"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+-(NSDictionary *)latestSavedViewingForMedia:(NSDictionary *)media {
+    NSArray *viewings = [self savedViewings];
+    NSDictionary *latest = nil;
+    for (NSDictionary *viewing in viewings) {
+        if ([viewing[@"mediaId"] intValue] == [media[@"id"] intValue]) {
+            latest = viewing;
+        }
+    }
+    return latest;
+}
+
+-(void)saveViewingForRetry:(NSDictionary *)viewing {
+    NSMutableArray *viewings = [[self savedViewings] mutableCopy];
+    [viewings addObject:viewing];
+    [self setSavedViewings:viewings];
+}
+
+-(void)flushSavedViewings {
+    NSArray *viewings = [self savedViewings];
+    if (viewings.count) {
+        NSDictionary *viewing = viewings[0];
+        [self sendViewing:viewing completion:^(NSError *error) {
+            if (!error) {
+                NSMutableArray *newViewings = [[self savedViewings] mutableCopy];
+                [newViewings removeObjectIdenticalTo:viewing];
+                [self setSavedViewings:newViewings];
+                [self flushSavedViewings];
+            }
+        }];
+    }
+}
+
+-(void)sendViewing:(NSDictionary *)viewing completion:(void (^)(NSError *))completion {
+    [self sendMethod:@"PUT" toEndpoint:@"/library/viewed" withParams:viewing completion:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (completion) {
+            completion(error);
+        }
+
+        if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+            NSDictionary *headers = [(NSHTTPURLResponse *)response allHeaderFields];
+            if (headers[@"X-PMC-Completed"] && [headers[@"X-PMC-Completed"] boolValue]) {
+                NSDictionary *media = [PMCDownloadManager metadataForDownloadedMedia:viewing[@"mediaId"]];
+                if (media) {
+                    [PMCDownloadManager deleteDownloadedMedia:media];
+                }
+            }
+        }
+    }];
+}
+
+-(void)sendViewingWithRetries:(NSDictionary *)viewing completion:(void (^)(NSError *error))completion {
+    [self sendViewing:viewing completion:^(NSError *error) {
+        if (error) {
+            [self saveViewingForRetry:viewing];
+        }
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(error);
+        });
+    }];
 }
 
 @end

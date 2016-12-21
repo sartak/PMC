@@ -6,6 +6,6 @@ extern NSString * const PMCLanguageDidChangeNotification;
 
 -(instancetype)initWithRequestPath:(NSString *)requestPath forRecord:(NSDictionary *)record withQueue:(PMCQueueViewController *)queue;
 
--(void)refreshRecords;
+-(void)refreshRecordsAnimated:(BOOL)animated;
 
 @end

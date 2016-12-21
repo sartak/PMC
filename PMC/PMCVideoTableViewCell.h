@@ -8,5 +8,8 @@
 @property (weak, nonatomic) IBOutlet UIImageView *immersionIndicator;
 @property (weak, nonatomic) IBOutlet UIImageView *enqueuedIndicator;
 @property (weak, nonatomic) IBOutlet UIImageView *playingIndicator;
+@property (weak, nonatomic) IBOutlet UIImageView *downloadedIndicator;
+@property (weak, nonatomic) IBOutlet UIView *downloadProgress;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *downloadingIndicator;
 
 @end

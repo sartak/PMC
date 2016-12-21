@@ -2,6 +2,7 @@
 #import "PMCVideoTableViewCell.h"
 #import "PMCGameTableViewCell.h"
 #import "PMCHTTPClient.h"
+#import "PMCDownloadManager.h"
 #import "PMCLibraryViewController.h"
 
 NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification";
@@ -110,7 +111,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
     __block BOOL refreshedCurrent = NO;
     __block BOOL refreshedMedia = NO;
 
-    [[PMCHTTPClient sharedClient] jsonFrom:@"/queue" completion:^(NSArray *media, NSError *error) {
+    [[PMCHTTPClient sharedClient] jsonFrom:@"/queue" withParams:nil completion:^(NSArray *media, NSError *error) {
         self.media = media;
         refreshedMedia = YES;
 
@@ -119,7 +120,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
         }
     }];
 
-    [[PMCHTTPClient sharedClient] jsonFrom:@"/current" completion:^(NSDictionary *currentMedia, NSError *error) {
+    [[PMCHTTPClient sharedClient] jsonFrom:@"/current" withParams:nil completion:^(NSDictionary *currentMedia, NSError *error) {
         self.currentMedia = currentMedia;
         refreshedCurrent = YES;
 
@@ -131,7 +132,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
 
 -(void)clearQueue {
     [self.refreshControl beginRefreshing];
-    [[PMCHTTPClient sharedClient] sendMethod:@"DELETE" toEndpoint:@"/queue" completion:^(NSError *error) {
+    [[PMCHTTPClient sharedClient] sendMethod:@"DELETE" toEndpoint:@"/queue" completion:^(NSData *data, NSURLResponse *response, NSError *error) {
         self.media = @[];
         [self.tableView reloadData];
         [self.refreshControl endRefreshing];
@@ -219,6 +220,10 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
     cell.immersionIndicator.hidden = ![[video valueForKeyPath:@"immersible"] boolValue];
     cell.immersionIndicator.tintColor = [UIColor greenColor];
 
+    cell.downloadedIndicator.hidden = ![PMCDownloadManager URLForDownloadedMedia:video mustExist:YES];
+
+    cell.downloadingIndicator.hidden = YES;
+
     if (isCurrent) {
         cell.playingIndicator.hidden = NO;
         cell.enqueuedIndicator.hidden = YES;
@@ -240,10 +245,15 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
         cell.backgroundColor = [UIColor whiteColor];
     }
     else {
-        NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:[[video valueForKeyPath:@"last_played"] intValue]];
+        int lastPlayedEpoch = 0;
+        if (![[video valueForKeyPath:@"last_played"] isEqual:[NSNull null]]) {
+            lastPlayedEpoch = [[video valueForKeyPath:@"last_played"] intValue];
+        }
+
+        NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:lastPlayedEpoch];
         NSTimeInterval since = [[NSDate date] timeIntervalSinceDate:lastPlayed];
         double percent = since / (365*24*60*60.);
-        double saturation = .10 + .25 * (1-percent);
+        double saturation = MAX(.10, .4 * (1-percent));
 
         cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];
     }

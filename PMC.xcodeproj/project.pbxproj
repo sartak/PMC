@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		CB031ABB1AB66B2E00A52927 /* PMCGameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB031AB91AB66B2E00A52927 /* PMCGameTableViewCell.m */; };
 		CB031ABC1AB66B2E00A52927 /* PMCGameTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB031ABA1AB66B2E00A52927 /* PMCGameTableViewCell.xib */; };
+		CB1F61131D3EE3CB0003E873 /* PMCDownloadsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1F61121D3EE3CB0003E873 /* PMCDownloadsViewController.m */; };
 		CB24721B19FB407200D9FE0D /* PMCFiveStarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB24721919FB407200D9FE0D /* PMCFiveStarTableViewCell.m */; };
 		CB24721C19FB407200D9FE0D /* PMCFiveStarTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB24721A19FB407200D9FE0D /* PMCFiveStarTableViewCell.xib */; };
 		CB24722019FB407D00D9FE0D /* PMCOneStarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB24721E19FB407D00D9FE0D /* PMCOneStarTableViewCell.m */; };
@@ -26,6 +27,7 @@
 		CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CB580760194E876200DF387D /* PMCAppDelegate.m */; };
 		CB580763194E876200DF387D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB580762194E876200DF387D /* Images.xcassets */; };
 		CBA7C3881BAB9CFA00EB362C /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CBA7C3871BAB9CFA00EB362C /* Launch.storyboard */; };
+		CBD75CBE1D3EEA5D00F7E8FF /* PMCDownloadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD75CBD1D3EEA5D00F7E8FF /* PMCDownloadManager.m */; };
 		CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */; };
 		CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */; };
 		CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */; };
@@ -36,6 +38,8 @@
 		CB031AB91AB66B2E00A52927 /* PMCGameTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCGameTableViewCell.m; sourceTree = "<group>"; };
 		CB031ABA1AB66B2E00A52927 /* PMCGameTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCGameTableViewCell.xib; sourceTree = "<group>"; };
 		CB0C53FC1BCCCCB500516671 /* PMCMediaCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMCMediaCell.h; sourceTree = "<group>"; };
+		CB1F61111D3EE3CB0003E873 /* PMCDownloadsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCDownloadsViewController.h; sourceTree = "<group>"; };
+		CB1F61121D3EE3CB0003E873 /* PMCDownloadsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCDownloadsViewController.m; sourceTree = "<group>"; };
 		CB24721819FB407200D9FE0D /* PMCFiveStarTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCFiveStarTableViewCell.h; sourceTree = "<group>"; };
 		CB24721919FB407200D9FE0D /* PMCFiveStarTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCFiveStarTableViewCell.m; sourceTree = "<group>"; };
 		CB24721A19FB407200D9FE0D /* PMCFiveStarTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCFiveStarTableViewCell.xib; sourceTree = "<group>"; };
@@ -64,6 +68,8 @@
 		CB580760194E876200DF387D /* PMCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMCAppDelegate.m; sourceTree = "<group>"; };
 		CB580762194E876200DF387D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		CBA7C3871BAB9CFA00EB362C /* Launch.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
+		CBD75CBC1D3EEA5D00F7E8FF /* PMCDownloadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCDownloadManager.h; sourceTree = "<group>"; };
+		CBD75CBD1D3EEA5D00F7E8FF /* PMCDownloadManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCDownloadManager.m; sourceTree = "<group>"; };
 		CBE7FAD1194E8A1900311B7E /* PMCLibraryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCLibraryViewController.h; sourceTree = "<group>"; };
 		CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCLibraryViewController.m; sourceTree = "<group>"; };
 		CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCVideoTableViewCell.xib; sourceTree = "<group>"; };
@@ -105,6 +111,8 @@
 				CB580760194E876200DF387D /* PMCAppDelegate.m */,
 				CB35204319FAC9A100FA8FD2 /* PMCHTTPClient.h */,
 				CB35204419FAC9A100FA8FD2 /* PMCHTTPClient.m */,
+				CBD75CBC1D3EEA5D00F7E8FF /* PMCDownloadManager.h */,
+				CBD75CBD1D3EEA5D00F7E8FF /* PMCDownloadManager.m */,
 				CB40C368197DCF5000E8077E /* PMCControlsViewController.h */,
 				CB40C369197DCF5000E8077E /* PMCControlsViewController.m */,
 				CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */,
@@ -112,6 +120,8 @@
 				CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */,
 				CB40C36B197DD06000E8077E /* PMCQueueViewController.h */,
 				CB40C36C197DD06000E8077E /* PMCQueueViewController.m */,
+				CB1F61111D3EE3CB0003E873 /* PMCDownloadsViewController.h */,
+				CB1F61121D3EE3CB0003E873 /* PMCDownloadsViewController.m */,
 				CB0C53FC1BCCCCB500516671 /* PMCMediaCell.h */,
 				CBE7FAD6194E8D6200311B7E /* PMCVideoTableViewCell.h */,
 				CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */,
@@ -176,11 +186,16 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = PMC;
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = RPGlanguage;
 				TargetAttributes = {
 					CB58074C194E876200DF387D = {
 						DevelopmentTeam = MWNU43S3CB;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -232,12 +247,14 @@
 				CB031ABB1AB66B2E00A52927 /* PMCGameTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB24721B19FB407200D9FE0D /* PMCFiveStarTableViewCell.m in Sources */,
+				CBD75CBE1D3EEA5D00F7E8FF /* PMCDownloadManager.m in Sources */,
 				CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */,
 				CB35204519FAC9A100FA8FD2 /* PMCHTTPClient.m in Sources */,
 				CB28F3E51984403300EB184A /* PMCTreeTableViewCell.m in Sources */,
 				CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */,
 				CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */,
 				CB40C36D197DD06000E8077E /* PMCQueueViewController.m in Sources */,
+				CB1F61131D3EE3CB0003E873 /* PMCDownloadsViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,14 +285,19 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -288,7 +310,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -308,20 +330,25 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
