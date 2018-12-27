@@ -5,6 +5,7 @@
 #import "PMCDownloadManager.h"
 #import "PMCLibraryViewController.h"
 
+NSString * const PMCQueueCurrentDidChangeNotification = @"PMCQueueCurrentDidChangeNotification";
 NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification";
 
 @interface PMCQueueViewController ()
@@ -103,6 +104,14 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
     [self.tableView reloadData];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:PMCQueueDidChangeNotification object:self userInfo:nil];
+    id media;
+    if (self.currentMedia) {
+        media = self.currentMedia;
+    }
+    else {
+        media = [NSNull null];
+    }
+    [[NSNotificationCenter defaultCenter] postNotificationName:PMCQueueCurrentDidChangeNotification object:self userInfo:@{@"media":media}];
 
     [sender endRefreshing];
 }
@@ -232,6 +241,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
         cell.playingIndicator.hidden = YES;
         cell.enqueuedIndicator.hidden = NO;
     }
+    cell.uploadIndicator.hidden = YES;
 
     cell.accessoryType = UITableViewCellAccessoryNone;
 
@@ -252,7 +262,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
 
         NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:lastPlayedEpoch];
         NSTimeInterval since = [[NSDate date] timeIntervalSinceDate:lastPlayed];
-        double percent = since / (365*24*60*60.);
+        double percent = since / (5*365*24*60*60.);
         double saturation = MAX(.10, .4 * (1-percent));
 
         cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];

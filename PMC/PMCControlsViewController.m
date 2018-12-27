@@ -1,5 +1,7 @@
 #import "PMCControlsViewController.h"
 #import "PMCHTTPClient.h"
+#import "PMCLibraryViewController.h"
+#import "PMCQueueViewController.h"
 
 @interface PMCControlsViewController ()
 
@@ -8,6 +10,7 @@
 
 @property (nonatomic) BOOL tvOn;
 
+@property (weak, nonatomic) IBOutlet UILabel *mediaTitleLabel;
 @property (nonatomic) NSString *pauseStatus;
 @property (nonatomic) NSString *fastForwardStatus;
 @property (nonatomic) BOOL isMuted;
@@ -39,6 +42,9 @@
 @property (weak, nonatomic) IBOutlet UIButton *piButton;
 @property (weak, nonatomic) IBOutlet UIButton *appleTvButton;
 
+@property (nonatomic, strong) NSString *currentLanguage;
+@property (nonatomic, strong) NSDictionary *currentMedia;
+
 @end
 
 @implementation PMCControlsViewController
@@ -52,6 +58,7 @@
         self.input = @"Pi";
         self.volume = self.targetVolume = 50;
         self.isMuted = NO;
+        self.currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hostDidChange:) name:PMCHostDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pauseStatusDidChange:) name:PMCPauseStatusNotification object:nil];
@@ -60,6 +67,8 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputStatusDidChange:) name:PMCInputStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(televisionPowerDidChange:) name:PMCTVPowerStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioDidChange:) name:PMCAudioDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaDidChange:) name:PMCQueueCurrentDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(languageDidChange:) name:PMCLanguageDidChangeNotification object:nil];
 
     }
     return self;
@@ -75,6 +84,8 @@
 
     self.locationSelector.hidden = [[PMCHTTPClient locations] count] == 1;
     [self setLocationLabel:[PMCHTTPClient sharedClient].currentLocation[@"label"]];
+    
+    self.currentMedia = self.queueController.currentMedia;
 }
 
 -(void)sendMethodToCurrent:(NSString *)method {
@@ -281,7 +292,6 @@
 -(void)refreshAudioButton {
     if (self.availableAudio && self.availableAudio.count > 0) {
         NSString *label = self.selectedAudio[@"label"];
-        NSLog(@"%@", label);
 
         [self.audioButton setTitle:label forState:UIControlStateNormal];
         self.audioButton.hidden = NO;
@@ -408,6 +418,48 @@
     else {
         [self setTvOn:NO animated:YES];
     }
+}
+
+-(void)mediaDidChange:(NSNotification *)notification {
+    id currentMedia = notification.userInfo[@"media"];
+    if (currentMedia == [NSNull null]) {
+        currentMedia = nil;
+    }
+    self.currentMedia = currentMedia;
+}
+
+-(void)setCurrentMedia:(NSDictionary *)currentMedia {
+    _currentMedia = currentMedia;
+
+    if (currentMedia) {
+        self.mediaTitleLabel.hidden = NO;
+        self.mediaTitleLabel.text = [self extractLabelFromRecord:currentMedia];
+    }
+    else {
+        self.mediaTitleLabel.hidden = YES;
+    }
+}
+
+-(void)languageDidChange:(NSNotification *)notification {
+    self.currentLanguage = notification.userInfo[@"new"];
+    [self redrawForLanguageChange];
+}
+
+-(NSString *)extractLabelFromRecord:(NSDictionary *)record {
+    for (NSString *lang in [@[self.currentLanguage] arrayByAddingObjectsFromArray:[NSLocale preferredLanguages]]) {
+        NSArray *components = [lang componentsSeparatedByString:@"-"];
+        NSString *keyPath = [@"label." stringByAppendingString:components[0]];
+        id label = [record valueForKeyPath:keyPath];
+        if (label && label != [NSNull null]) {
+            return label;
+        }
+    }
+    
+    return [record valueForKeyPath:@"label.en"];
+}
+
+-(void)redrawForLanguageChange {
+    self.mediaTitleLabel.text = [self extractLabelFromRecord:self.currentMedia];
 }
 
 - (IBAction)turnTVOn:(id)sender {

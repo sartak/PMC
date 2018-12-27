@@ -17,4 +17,7 @@
 +(void)downloadFailedForMedia:(NSDictionary *)media withReason:(NSString *)reason;
 +(NSString *)reasonForFailedDownloadOfMedia:(NSDictionary *)media;
 
++(void)persistDownloadedMedia:(NSDictionary *)media;
++(BOOL)downloadedMediaIsPersisted:(NSDictionary *)media;
+
 @end

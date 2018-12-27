@@ -26,6 +26,7 @@ extern NSString * const PMCAudioDidChangeNotification;
 
 -(void)sendViewing:(NSDictionary *)viewing completion:(void (^)(NSError *))completion;
 -(void)sendViewingWithRetries:(NSDictionary *)viewing completion:(void (^)(NSError *error))completion;
+-(BOOL)hasSavedOrProvisionalViewingForMedia:(NSDictionary *)media;
 -(NSDictionary *)latestSavedViewingForMedia:(NSDictionary *)media;
 
 -(void)setProvisionalViewing:(NSDictionary *)viewing;

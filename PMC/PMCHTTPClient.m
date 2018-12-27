@@ -66,29 +66,31 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
 }
 
 +(NSArray *)locations {
+#if 0
+        return @[@{@"label": @"Library", @"host": @"http://atwood.local:5000", @"id":@"atwood" }];
+#elif 0
+        return @[@{@"label": @"Library", @"host": @"http://hampshire.local:5000", @"id":@"hampshire" }];
+#else
     NSArray *locations;
 
     NSString *network = [self networkSSID];
 
-    if ([network isEqualToString:@"wifi.sartak.org"]) {
+
+    if ([network isEqualToString:@"Dexter"]) {
         locations = @[
-                 @{@"label": @"Living Room", @"host": @"http://junction.local:5000", @"id":@"junction" },
-                 @{@"label": @"Bedroom", @"host": @"http://tleilax.local:5000", @"id":@"tleilax" },
+                 @{@"label": @"Office", @"host": @"http://junction.local:5000", @"id":@"junction" },
+                 //@{@"label": @"Bedroom", @"host": @"http://tleilax.local:5000", @"id":@"tleilax" },
                  ];
     }
     else {
         locations = @[
-                 @{@"label": @"Living Room", @"host": @"https://pmc.sartak.org", @"id":@"junction" },
-                 @{@"label": @"Bedroom", @"host": @"https://pmc2.sartak.org", @"id":@"tleilax" },
-                 //@{@"label": @"Library", @"host": @"http://hampshire.local:5000", @"id":@"hampshire" },
+                 @{@"label": @"Office", @"host": @"https://pmc.sartak.org", @"id":@"junction" },
+              //   @{@"label": @"Bedroom", @"host": @"https://pmc2.sartak.org", @"id":@"tleilax" },
                  ];
     }
 
-    if ([network isEqualToString:@"Best Practical"]) {
-        locations = [locations arrayByAddingObject:@{@"label": @"BPS", @"host": @"http://bloc.local:5000", @"id":@"bloc" }];
-    }
-
     return locations;
+#endif
 }
 
 +(NSString *)username {
@@ -277,7 +279,7 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
         }
 
         NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSURL *documentsURL = [fileManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask][0];
+        NSURL *documentsURL = [fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0];
         NSURL *subdirURL = [documentsURL URLByAppendingPathComponent:@"downloaded"];
 
         NSURL *fileURL = [PMCDownloadManager URLForDownloadedMedia:media mustExist:NO];
@@ -303,10 +305,24 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
         NSError *moveError;
         if (![fileManager moveItemAtURL:location toURL:fileURL error:&moveError]) {
             NSLog(@"%@", moveError);
-            [PMCDownloadManager downloadFailedForMedia:media withReason:error.localizedDescription];
+            [PMCDownloadManager downloadFailedForMedia:media withReason:moveError.localizedDescription];
             if (completion) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     completion(nil, moveError);
+                });
+            }
+            return;
+        }
+        
+        NSError *attrError;
+        BOOL success = [fileURL setResourceValue:[NSNumber numberWithBool: YES]
+                                          forKey:NSURLIsExcludedFromBackupKey error:&attrError];
+        if (!success) {
+            NSLog(@"%@", attrError);
+            [PMCDownloadManager downloadFailedForMedia:media withReason:attrError.localizedDescription];
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(nil, attrError);
                 });
             }
             return;
@@ -529,6 +545,13 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
     return viewings;
 }
 
+-(BOOL)hasSavedOrProvisionalViewingForMedia:(NSDictionary *)media {
+    if ([[self provisionalViewing][@"mediaId"] intValue] == [media[@"id"] intValue]) {
+        return YES;
+    }
+    return [self latestSavedViewingForMedia:media] ? YES : NO;
+}
+
 -(void)setSavedViewings:(NSArray *)viewings {
     [[NSUserDefaults standardUserDefaults] setObject:viewings forKey:@"viewing"];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -576,7 +599,7 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
             NSDictionary *headers = [(NSHTTPURLResponse *)response allHeaderFields];
             if (headers[@"X-PMC-Completed"] && [headers[@"X-PMC-Completed"] boolValue]) {
                 NSDictionary *media = [PMCDownloadManager metadataForDownloadedMedia:viewing[@"mediaId"]];
-                if (media) {
+                if (media && ![PMCDownloadManager downloadedMediaIsPersisted:media]) {
                     [PMCDownloadManager deleteDownloadedMedia:media];
                 }
             }

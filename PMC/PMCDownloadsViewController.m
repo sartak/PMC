@@ -54,6 +54,7 @@
     [refreshed addObjectsFromArray:[PMCDownloadManager downloadedMedia]];
     
     [refreshed sortUsingDescriptors:@[
+                                      [NSSortDescriptor sortDescriptorWithKey:@"materialized_path" ascending:YES],
                                       [NSSortDescriptor sortDescriptorWithKey:@"treeId" ascending:YES],
                                       [NSSortDescriptor sortDescriptorWithKey:@"sort_order" ascending:YES],
                                       [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES],

@@ -18,14 +18,15 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
 
-    PMCControlsViewController *controls = [[PMCControlsViewController alloc] init];
-    controls.tabBarItem.image = [UIImage imageNamed:@"Play Circle"];
-    UINavigationController *controlsNav = [[UINavigationController alloc] initWithRootViewController:controls];
-
     PMCQueueViewController *queue = [[PMCQueueViewController alloc] init];
     queue.tabBarItem.image = [UIImage imageNamed:@"Playlist"];
     UINavigationController *queueNav = [[UINavigationController alloc] initWithRootViewController:queue];
-    
+
+    PMCControlsViewController *controls = [[PMCControlsViewController alloc] init];
+    controls.tabBarItem.image = [UIImage imageNamed:@"Play Circle"];
+    UINavigationController *controlsNav = [[UINavigationController alloc] initWithRootViewController:controls];
+    controls.queueController = queue;
+
     PMCDownloadsViewController *downloads = [[PMCDownloadsViewController alloc] init];
     downloads.tabBarItem.image = [UIImage imageNamed:@"Download"];
     UINavigationController *downloadsNav = [[UINavigationController alloc] initWithRootViewController:downloads];

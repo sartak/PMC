@@ -11,6 +11,7 @@
 
 @import AVFoundation;
 @import AVKit;
+@import MediaPlayer;
 
 NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotification";
 
@@ -101,17 +102,18 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
             if ([self.queue isPlayingMedia:record]) {
                 cell.playingIndicator.hidden = NO;
                 cell.enqueuedIndicator.hidden = YES;
+                cell.uploadIndicator.hidden = YES;
             }
             else if ([self.queue hasQueuedMedia:record]) {
                 cell.playingIndicator.hidden = YES;
                 cell.enqueuedIndicator.hidden = NO;
+                cell.uploadIndicator.hidden = YES;
             }
             else {
                 cell.playingIndicator.hidden = YES;
                 cell.enqueuedIndicator.hidden = YES;
+                cell.uploadIndicator.hidden = ![[PMCHTTPClient sharedClient] hasSavedOrProvisionalViewingForMedia:record];
             }
-            
-
         }
     }
 }
@@ -221,6 +223,30 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
                                   completion:nil];
 }
 
+-(NSString *)preferredSpokenLanguages:(NSDictionary *)video {
+    NSMutableArray *langs = [NSMutableArray array];
+    for (NSDictionary *spec in video[@"spoken_langs"]) {
+        if (![langs containsObject:spec[@"type"]]) {
+            [langs addObject:spec[@"type"]];
+        }
+    }
+    
+    langs = [[langs sortedArrayUsingSelector:@selector(compare:)] mutableCopy];
+    NSMutableArray *existingPreferred = [NSMutableArray array];
+    
+    for (NSString *preferredFull in [NSLocale preferredLanguages]) {
+        NSString *preferred = [preferredFull componentsSeparatedByString:@"-"][0];
+        
+        if ([langs containsObject:preferred]) {
+            [existingPreferred addObject:preferred];
+            [langs removeObject:preferred];
+        }
+    }
+    [existingPreferred addObjectsFromArray:langs];
+    
+    return [existingPreferred componentsJoinedByString:@", "];
+}
+
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
 
@@ -316,14 +342,17 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     if ([self.queue isPlayingMedia:video]) {
         cell.playingIndicator.hidden = NO;
         cell.enqueuedIndicator.hidden = YES;
+        cell.uploadIndicator.hidden = YES;
     }
     else if ([self.queue hasQueuedMedia:video]) {
         cell.playingIndicator.hidden = YES;
         cell.enqueuedIndicator.hidden = NO;
+        cell.uploadIndicator.hidden = YES;
     }
     else {
         cell.playingIndicator.hidden = YES;
         cell.enqueuedIndicator.hidden = YES;
+        cell.uploadIndicator.hidden = ![[PMCHTTPClient sharedClient] hasSavedOrProvisionalViewingForMedia:video];
     }
 
     if (![[video valueForKeyPath:@"streamable"] boolValue]) {
@@ -340,7 +369,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
         NSDate *lastPlayed = [NSDate dateWithTimeIntervalSince1970:lastPlayedEpoch];
         NSTimeInterval since = [[NSDate date] timeIntervalSinceDate:lastPlayed];
-        double percent = since / (365*24*60*60.);
+        double percent = since / (5*365*24*60*60.);
         double saturation = MAX(.10, .4 * (1-percent));
 
         cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];
@@ -464,6 +493,19 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     return cell;
 }
 
+-(void)shareDownloadedMedia:(NSDictionary *)media fromCell:(UITableViewCell *)cell {
+    NSURL *url = [PMCDownloadManager URLForDownloadedMedia:media mustExist:YES];
+    if (url) {
+        UIActivityViewController *activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+
+        activity.popoverPresentationController.sourceView = self.view;
+        activity.popoverPresentationController.sourceRect = cell.frame;
+        [activity.popoverPresentationController setPermittedArrowDirections:UIPopoverArrowDirectionDown|UIPopoverArrowDirectionUp];
+        
+        [self presentViewController:activity animated:YES completion:nil];
+    }
+}
+
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -536,6 +578,16 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 
     NSString *message = [self extractLabelFromRecord:record];
+    if ([record[@"tags"] count]) {
+        message = [NSString stringWithFormat:@"%@\n[%@]", message, [record[@"tags"] componentsJoinedByString:@", "]];
+    }
+    if ([record[@"path"] hasPrefix:@"/media/paul/Go/American Yunguseng Dojang/"]) {
+        message = [NSString stringWithFormat:@"%@\n(%d)", message, -1*[record[@"sort_order"] intValue]];
+    }
+    else if ([record[@"type"] isEqualToString:@"video"]) {
+        message = [NSString stringWithFormat:@"%@\n(%@)", message, [self preferredSpokenLanguages:record]];
+    }
+
     NSString *downloadError = [PMCDownloadManager reasonForFailedDownloadOfMedia:record];
     if (downloadError) {
         message = downloadError;
@@ -547,21 +599,52 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
                                                                 preferredStyle:UIAlertControllerStyleActionSheet];
 
         for (NSDictionary *action in record[@"actions"]) {
-
             if ([action[@"type"] isEqualToString:@"download"]) {
                 NSURL *url = [PMCDownloadManager URLForDownloadedMedia:record mustExist:YES];
                 if (url) {
                     // we have already downloaded this file, so add play and delete actions in place of download
-                    NSMutableDictionary *actionForPlay = [action mutableCopy];
-                    actionForPlay[@"seek"] = [record valueForKeyPath:@"resume.seconds"];
-                    NSLog(@"%@", actionForPlay);
+                    if ([[record valueForKeyPath:@"resume.seconds"] intValue]) {
+                        UIAlertAction *playAction = [UIAlertAction actionWithTitle:@"Play Downloaded from Beginning"
+                                                                               style:UIAlertActionStyleDefault
+                                                                             handler:^(UIAlertAction *alertAction) {
+                                                                                 [self beginPlayingURL:url forRecord:record withAction:action];
+                                                                             }];
+                        [alert addAction:playAction];
 
-                    UIAlertAction *playAction = [UIAlertAction actionWithTitle:@"Play Downloaded"
-                                                                         style:UIAlertActionStyleDefault
-                                                                       handler:^(UIAlertAction *alertAction) {
-                                                                           [self beginPlayingURL:url forRecord:record withAction:actionForPlay];
-                                                                       }];
-                    [alert addAction:playAction];
+                        NSMutableDictionary *actionForPlay = [action mutableCopy];
+                        actionForPlay[@"seek"] = [record valueForKeyPath:@"resume.seconds"];
+                        UIAlertAction *resumeAction = [UIAlertAction actionWithTitle:@"Resume Downloaded"
+                                                                             style:UIAlertActionStyleDefault
+                                                                           handler:^(UIAlertAction *alertAction) {
+                                                                               [self beginPlayingURL:url forRecord:record withAction:actionForPlay];
+                                                                           }];
+                        [alert addAction:resumeAction];
+                    }
+                    else {
+                        UIAlertAction *playAction = [UIAlertAction actionWithTitle:@"Play Downloaded"
+                                                                             style:UIAlertActionStyleDefault
+                                                                           handler:^(UIAlertAction *alertAction) {
+                                                                               [self beginPlayingURL:url forRecord:record withAction:action];
+                                                                           }];
+                        [alert addAction:playAction];
+                    }
+
+                    UIAlertAction *shareAction = [UIAlertAction actionWithTitle:@"Share Downloaded"
+                                                                          style:UIAlertActionStyleDefault
+                                                                        handler:^(UIAlertAction *alertAction) {
+                                                                            [self shareDownloadedMedia:record fromCell:cell];
+                                                                        }];
+                    [alert addAction:shareAction];
+
+                    if (![PMCDownloadManager downloadedMediaIsPersisted:record]) {
+                        UIAlertAction *persistAction = [UIAlertAction actionWithTitle:@"Disable Autodelete"
+                                                                                style:UIAlertActionStyleDefault
+                                                                              handler:^(UIAlertAction *alertAction) {
+                                                                                  [PMCDownloadManager persistDownloadedMedia:record];
+                                                                              }];
+                    
+                        [alert addAction:persistAction];
+                    }
 
                     UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"Delete Downloaded"
                                                                            style:UIAlertActionStyleDestructive
@@ -672,14 +755,22 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     else if ([action[@"type"] isEqualToString:@"download"]) {
         [self beginDownload:record usingAction:action fromCell:cell];
     }
-    else if ([action[@"type"] isEqualToString:@"enqueue"]) {
-        [self enqueueMedia:record usingAction:action];
-    }
     else if ([action[@"type"] isEqualToString:@"navigate"]) {
         PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:action[@"url"] forRecord:record withQueue:self.queue];
         next.currentLanguage = self.currentLanguage;
 
         [self.navigationController pushViewController:next animated:YES];
+    }
+    else {
+        NSString *method = @"POST";
+        if (action[@"method"]) {
+            method = action[@"method"];
+        }
+        [[PMCHTTPClient sharedClient] sendMethod:method
+                                      toEndpoint:action[@"url"]
+                                      completion:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                          [self refreshRecordsAnimated:NO];
+                                      }];
     }
 }
 
@@ -810,11 +901,102 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     vc.delegate = self;
 
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+    
+    MPNowPlayingInfoCenter *infoCenter = [MPNowPlayingInfoCenter defaultCenter];
+    NSDictionary *info = @{
+                           MPMediaItemPropertyTitle:[self extractLabelFromRecord:record],
+                           MPNowPlayingInfoPropertyPlaybackRate:@(1.0),
+                           MPMediaItemPropertyPlaybackDuration:record[@"duration_seconds"]
+                           };
+    infoCenter.nowPlayingInfo = info;
+
+    MPRemoteCommandCenter *rcc = [MPRemoteCommandCenter sharedCommandCenter];
+    MPSkipIntervalCommand *skipBackwardIntervalCommand = [rcc skipBackwardCommand];
+    [skipBackwardIntervalCommand setEnabled:YES];
+    [skipBackwardIntervalCommand addTarget:self action:@selector(skipBackwardEvent:)];
+    skipBackwardIntervalCommand.preferredIntervals = @[@(15)];
+
+    MPSkipIntervalCommand *skipForwardIntervalCommand = [rcc skipForwardCommand];
+    skipForwardIntervalCommand.preferredIntervals = @[@(15)];
+    [skipForwardIntervalCommand setEnabled:YES];
+    [skipForwardIntervalCommand addTarget:self action:@selector(skipForwardEvent:)];
+
+    MPRemoteCommand *pauseCommand = [rcc pauseCommand];
+    [pauseCommand setEnabled:YES];
+    [pauseCommand addTarget:self action:@selector(playOrPauseEvent:)];
+
+    MPRemoteCommand *playCommand = [rcc playCommand];
+    [playCommand setEnabled:YES];
+    [playCommand addTarget:self action:@selector(playOrPauseEvent:)];
+
+    vc.updatesNowPlayingInfoCenter = NO;
 
     [self presentViewController:vc animated:YES completion:^{
         self.provisionalViewingTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(saveProvisionalViewing) userInfo:nil repeats:YES];
         [player play];
+        [self updateNowPlaying];
     }];
+}
+
+-(void)seekToTime:(CMTime)time {
+    NSDictionary *stream = self.currentlyWatching;
+    if (!stream) {
+        return;
+    }
+    AVPlayer *player = stream[@"player"];
+    [player seekToTime:time];
+    [self updateNowPlaying:CMTimeGetSeconds(time)];
+}
+
+-(void)updateNowPlaying:(NSTimeInterval)time {
+    MPNowPlayingInfoCenter *center = [MPNowPlayingInfoCenter defaultCenter];
+    NSMutableDictionary *playingInfo = [NSMutableDictionary dictionaryWithDictionary:center.nowPlayingInfo];
+    [playingInfo setObject:@(time) forKey:MPNowPlayingInfoPropertyElapsedPlaybackTime];
+    center.nowPlayingInfo = playingInfo;
+}
+
+-(void)updateNowPlaying {
+    NSDictionary *stream = self.currentlyWatching;
+    if (!stream) {
+        return;
+    }
+    AVPlayer *player = stream[@"player"];
+    [self updateNowPlaying:CMTimeGetSeconds(player.currentTime)];
+}
+
+-(void)skipByInterval:(NSTimeInterval)interval {
+    NSDictionary *stream = self.currentlyWatching;
+    if (!stream) {
+        return;
+    }
+    AVPlayer *player = stream[@"player"];
+    
+    CMTime newTime = CMTimeMakeWithSeconds(CMTimeGetSeconds(player.currentTime) + interval, player.currentTime.timescale);
+    [self seekToTime:newTime];
+}
+
+-(void)skipBackwardEvent:(MPSkipIntervalCommandEvent *)event {
+    [self skipByInterval:-event.interval];
+}
+
+-(void)skipForwardEvent:(MPSkipIntervalCommandEvent *)event {
+    [self skipByInterval:event.interval];
+}
+
+-(void)playOrPauseEvent:(MPRemoteCommandEvent *)event {
+    NSDictionary *stream = self.currentlyWatching;
+    if (!stream) {
+        return;
+    }
+    AVPlayer *player = stream[@"player"];
+    
+    if (player.currentItem && player.rate != 0) {
+        [player pause];
+    }
+    else {
+        [player play];
+        [self updateNowPlaying];
+    }
 }
 
 -(void)saveProvisionalViewing {
@@ -834,8 +1016,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         if (player.status == AVPlayerStatusReadyToPlay) {
             if (self.currentlyWatching[@"seek"]) {
                 CMTimeScale scale = player.currentTime.timescale;
-                CMTime tolerance = CMTimeMake(60, scale);
-                [player seekToTime:CMTimeMake([self.currentlyWatching[@"seek"] intValue], scale) toleranceBefore:tolerance toleranceAfter:tolerance];
+                CMTime time = CMTimeMake([self.currentlyWatching[@"seek"] intValue], scale);
+                [self seekToTime:time];
             }
         }
         else if (player.status == AVPlayerStatusFailed) {
@@ -855,6 +1037,8 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         if (item.playbackLikelyToKeepUp) {
             NSLog(@"unpausing because playbackLikelyToKeepUp");
             [player play];
+            [self updateNowPlaying];
+
         }
          */
     }
@@ -886,7 +1070,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 
     return @{
-             @"mediaId": media[@"id"],
+             @"mediaId": [media[@"id"] stringValue],
              @"startTime": [@([stream[@"startTime"] timeIntervalSince1970]) stringValue],
              @"endTime": [@([[NSDate date] timeIntervalSince1970]) stringValue],
              @"initialSeconds": [stream[@"initialSeconds"] stringValue],
@@ -916,6 +1100,12 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     [item removeObserver:self forKeyPath:@"playbackBufferEmpty"];
     [item removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
 
+    MPNowPlayingInfoCenter *infoCenter = [MPNowPlayingInfoCenter defaultCenter];
+    infoCenter.nowPlayingInfo = nil;
+
+   // [[UIApplication sharedApplication] endReceivingRemoteControlEvents];
+  //  [self resignFirstResponder];
+
     if (params) {
         [[PMCHTTPClient sharedClient] setProvisionalViewing:nil];
         [[PMCHTTPClient sharedClient] sendViewingWithRetries:params completion:^(NSError *error) {
@@ -934,12 +1124,10 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     });
 }
 
--(void)viewWillAppear:(BOOL)animated {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.currentlyWatching) {
-            [self didFinishWatching];
-        }
-    });
+-(void)viewDidAppear:(BOOL)animated {
+    if (self.currentlyWatching) {
+        [self didFinishWatching];
+    }
 }
 
 #pragma mark - AVPlayerViewControllerDelegate

@@ -7,5 +7,6 @@
 @property (weak, nonatomic) IBOutlet UILabel *playtimeLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *enqueuedIndicator;
 @property (weak, nonatomic) IBOutlet UIImageView *playingIndicator;
+@property (weak, nonatomic) IBOutlet UIImageView *uploadIndicator;
 
 @end

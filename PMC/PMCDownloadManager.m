@@ -13,7 +13,7 @@
 
 +(NSDirectoryEnumerator *)mediaEnumerator {
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSURL *documentsURL = [fileManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask][0];
+    NSURL *documentsURL = [fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0];
     NSURL *subdirURL = [documentsURL URLByAppendingPathComponent:@"downloaded"];
     
     NSDirectoryEnumerator *enumerator = [fileManager enumeratorAtURL:subdirURL includingPropertiesForKeys:@[NSURLNameKey] options:NSDirectoryEnumerationSkipsSubdirectoryDescendants errorHandler:nil];
@@ -82,10 +82,10 @@
     return [media copy];
 }
 
-+(NSURL *)URLForDownloadedMedia:(NSDictionary *)media mustExist:(BOOL)mustExist {
-    NSString *fileName = [NSString stringWithFormat:@"%@.%@", media[@"id"], media[@"extension"]];
++(NSURL *)URLForDownloadedMedia:(NSDictionary *)media mustExist:(BOOL)mustExist withExtension:(NSString *)extension {
+    NSString *fileName = [NSString stringWithFormat:@"%@.%@", media[@"id"], extension];
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSURL *documentsURL = [fileManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask][0];
+    NSURL *documentsURL = [fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0];
     NSURL *subdirURL = [documentsURL URLByAppendingPathComponent:@"downloaded"];
     NSURL *fileURL = [subdirURL URLByAppendingPathComponent:fileName];
     
@@ -96,10 +96,18 @@
     return fileURL;
 }
 
++(NSURL *)URLForDownloadedMedia:(NSDictionary *)media mustExist:(BOOL)mustExist {
+    return [self URLForDownloadedMedia:media mustExist:mustExist withExtension:media[@"extension"]];
+}
+
++(NSURL *)URLForPersistedMedia:(NSDictionary *)media mustExist:(BOOL)mustExist {
+    return [self URLForDownloadedMedia:media mustExist:mustExist withExtension:@"persist"];
+}
+
 +(NSURL *)URLForDownloadedMediaMetadata:(NSString *)mediaId mustExist:(BOOL)mustExist {
     NSString *fileName = [NSString stringWithFormat:@"%@.json", mediaId];
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSURL *documentsURL = [fileManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask][0];
+    NSURL *documentsURL = [fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0];
     NSURL *subdirURL = [documentsURL URLByAppendingPathComponent:@"downloaded"];
     NSURL *fileURL = [subdirURL URLByAppendingPathComponent:fileName];
     
@@ -113,6 +121,7 @@
 +(void)deleteDownloadedMedia:(NSDictionary *)media {
     NSURL *fileURL = [self URLForDownloadedMedia:media mustExist:YES];
     NSURL *metadataURL = [self URLForDownloadedMediaMetadata:media[@"id"] mustExist:YES];
+    NSURL *persistedURL = [self URLForPersistedMedia:media mustExist:YES];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSError *error;
@@ -123,6 +132,10 @@
     
     if (metadataURL) {
         [fileManager removeItemAtURL:metadataURL error:&error];
+    }
+    
+    if (persistedURL) {
+        [fileManager removeItemAtURL:persistedURL error:&error];
     }
 }
 
@@ -207,6 +220,20 @@
 +(NSString *)reasonForFailedDownloadOfMedia:(NSDictionary *)media {
     NSMutableDictionary *failed = [self failedDownloads];
     return failed[media[@"id"]][@"reason"];
+}
+
++(void)persistDownloadedMedia:(NSDictionary *)media {
+    if ([self downloadedMediaIsPersisted:media]) {
+        return;
+    }
+    
+    NSURL *url = [self URLForPersistedMedia:media mustExist:NO];
+    NSData *empty = [@"" dataUsingEncoding:NSUTF8StringEncoding];
+    [empty writeToFile:url.path atomically:YES];
+}
+
++(BOOL)downloadedMediaIsPersisted:(NSDictionary *)media {
+    return [self URLForPersistedMedia:media mustExist:YES] ? YES : NO;
 }
 
 @end

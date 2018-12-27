@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2555" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11524"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -35,6 +35,7 @@
                         <rect key="frame" x="20" y="141" width="174" height="16"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="174" id="8cw-og-eX8"/>
+                            <constraint firstAttribute="height" constant="16" id="IIq-Py-P7h"/>
                         </constraints>
                         <fontDescription key="fontDescription" type="system" pointSize="13"/>
                         <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -82,9 +83,13 @@
                             <constraint firstAttribute="width" constant="12" id="zGa-ml-H2p"/>
                         </constraints>
                     </activityIndicatorView>
+                    <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Upload" translatesAutoresizingMaskIntoConstraints="NO" id="P9i-Eo-FAv" userLabel="Upload Indicator">
+                        <rect key="frame" x="4" y="143" width="12" height="12"/>
+                    </imageView>
                 </subviews>
                 <constraints>
                     <constraint firstItem="u4h-Ar-KeX" firstAttribute="leading" secondItem="ajH-lD-mXz" secondAttribute="leading" id="3Kk-Rg-D1C"/>
+                    <constraint firstItem="P9i-Eo-FAv" firstAttribute="top" secondItem="u4h-Ar-KeX" secondAttribute="top" id="3LN-4X-NF9"/>
                     <constraint firstAttribute="bottomMargin" secondItem="Vl2-IR-Ubf" secondAttribute="bottom" constant="-7.5" id="4jn-e0-hr9"/>
                     <constraint firstItem="u4h-Ar-KeX" firstAttribute="bottom" secondItem="ajH-lD-mXz" secondAttribute="bottom" id="5QR-GB-e2D"/>
                     <constraint firstAttribute="bottomMargin" secondItem="cCd-Nb-Eg8" secondAttribute="bottom" constant="-7.5" id="5rI-Bl-rIK"/>
@@ -102,6 +107,7 @@
                     <constraint firstItem="HXR-yC-pXS" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="-4" id="ckf-4v-0Tm"/>
                     <constraint firstItem="cCd-Nb-Eg8" firstAttribute="leading" secondItem="Vl2-IR-Ubf" secondAttribute="trailing" constant="8" id="iTG-3O-vaW"/>
                     <constraint firstAttribute="trailingMargin" secondItem="JoC-f2-oUF" secondAttribute="trailing" constant="-52" id="ijF-Jm-vvS"/>
+                    <constraint firstItem="P9i-Eo-FAv" firstAttribute="bottom" secondItem="u4h-Ar-KeX" secondAttribute="bottom" id="kKT-Mp-I5C"/>
                     <constraint firstItem="sgz-E0-VyJ" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="-4" id="kOU-yz-ugx"/>
                     <constraint firstItem="ajH-lD-mXz" firstAttribute="centerY" secondItem="Vl2-IR-Ubf" secondAttribute="centerY" id="kmX-14-1UG"/>
                     <constraint firstItem="1XM-32-s1x" firstAttribute="top" secondItem="oVa-60-nx9" secondAttribute="topMargin" id="kpI-Rd-qVa"/>
@@ -111,6 +117,8 @@
                     <constraint firstItem="Vl2-IR-Ubf" firstAttribute="leading" secondItem="ajH-lD-mXz" secondAttribute="trailing" constant="4" id="qDL-DI-Lbg"/>
                     <constraint firstItem="cCd-Nb-Eg8" firstAttribute="trailing" secondItem="oVa-60-nx9" secondAttribute="trailingMargin" id="qkA-Sz-7lO"/>
                     <constraint firstItem="ajH-lD-mXz" firstAttribute="leading" secondItem="oVa-60-nx9" secondAttribute="leadingMargin" constant="-4" id="rUB-dp-lrO"/>
+                    <constraint firstItem="P9i-Eo-FAv" firstAttribute="leading" secondItem="u4h-Ar-KeX" secondAttribute="leading" id="yla-w6-LEe"/>
+                    <constraint firstItem="P9i-Eo-FAv" firstAttribute="trailing" secondItem="u4h-Ar-KeX" secondAttribute="trailing" id="zk8-y0-3Iq"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
@@ -123,6 +131,7 @@
                 <outlet property="immersionIndicator" destination="HXR-yC-pXS" id="lCu-Uv-4fJ"/>
                 <outlet property="playingIndicator" destination="u4h-Ar-KeX" id="5Xh-cR-Gef"/>
                 <outlet property="titleLabel" destination="1XM-32-s1x" id="L1r-tR-zh0"/>
+                <outlet property="uploadIndicator" destination="P9i-Eo-FAv" id="XxX-O3-K0X"/>
             </connections>
             <point key="canvasLocation" x="325" y="290"/>
         </tableViewCell>
@@ -132,6 +141,7 @@
         <image name="Download" width="25" height="25"/>
         <image name="Play Circle" width="25" height="25"/>
         <image name="Playlist" width="28" height="24"/>
+        <image name="Upload" width="25" height="25"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
