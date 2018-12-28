@@ -21,6 +21,7 @@ extern NSString * const PMCBackgroundDownloadErrorDidClear;
 -(NSString *)downloadErrorForMedia:(NSDictionary *)media;
 -(void)clearDownloadErrorForMedia:(NSDictionary *)media;
 -(NSData *)downloadResumeDataForMedia:(NSDictionary *)media;
+-(BOOL)downloadIsLocalForMedia:(NSDictionary *)media;
 
 -(NSURL *)URLForDownloadedMedia:(NSDictionary *)media mustExist:(BOOL)mustExist;
 -(void)takeUpdatesToMetadataForMedia:(NSDictionary *)media;

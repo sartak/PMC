@@ -113,6 +113,9 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
     NSMutableDictionary<NSString *, NSArray *> *errors = [[self downloadErrors] mutableCopy];
     [errors removeObjectForKey:media[@"id"]];
     [self saveDownloadErrors:errors];
+    [self.resumeData removeObjectForKey:media[@"id"]];
+    [self clearDownloadIsLocalForMedia:media];
+
     [[NSNotificationCenter defaultCenter] postNotificationName:PMCBackgroundDownloadErrorDidClear object:self userInfo:@{@"media":media}];
 }
 
@@ -145,7 +148,39 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
     [self saveDownloadProgress:progress];
 }
 
+-(NSDictionary<NSString *, NSNumber *> *)downloadIsLocal {
+    NSDictionary *isLocal = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"downloadIsLocal"];
+    if (!isLocal) {
+        return @{};
+    }
+    return isLocal;
+}
+
+-(void)saveDownloadIsLocal:(NSDictionary<NSString *, NSNumber *> *)isLocal {
+    [[NSUserDefaults standardUserDefaults] setObject:isLocal forKey:@"downloadIsLocal"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+-(BOOL)downloadIsLocalForMedia:(NSDictionary *)media {
+    return [self.downloadIsLocal[media[@"id"]] boolValue];
+}
+
+-(void)saveDownloadIsLocalForMedia:(NSDictionary *)media isLocal:(BOOL)local {
+    NSMutableDictionary<NSString *, NSNumber *> *isLocal = [[self downloadIsLocal] mutableCopy];
+    isLocal[media[@"id"]] = @(local);
+    [self saveDownloadIsLocal:isLocal];
+}
+
+-(void)clearDownloadIsLocalForMedia:(NSDictionary *)media {
+    NSMutableDictionary<NSString *, NSNumber *> *isLocal = [[self downloadIsLocal] mutableCopy];
+    [isLocal removeObjectForKey:media[@"id"]];
+    [self saveDownloadIsLocal:isLocal];
+}
+
 -(void)downloadMedia:(NSDictionary *)media usingAction:(NSDictionary *)action {
+    [self saveDownloadingMetadataForMedia:media];
+    [self clearDownloadErrorForMedia:media];
+
     NSString *endpoint = action[@"url"];
     NSMutableURLRequest *request = [[PMCHTTPClient sharedClient] requestWithEndpoint:endpoint method:@"GET"];
 
@@ -158,11 +193,11 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
     }
     else {
         download = [self.session downloadTaskWithRequest:request];
+        BOOL isLocal = [[request.URL host] containsString:@".local"];
+        [self saveDownloadIsLocalForMedia:media isLocal:isLocal];
     }
 
     download.taskDescription = media[@"id"];
-    [self saveDownloadingMetadataForMedia:media];
-    [self clearDownloadErrorForMedia:media];
 
     [download resume];
 
@@ -466,6 +501,7 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
 
     [self clearDownloadingMetadataForMedia:media];
     [self clearDownloadProgressForMedia:media];
+    [self clearDownloadIsLocalForMedia:media];
     [self.resumeData removeObjectForKey:media[@"id"]];
     [self.bytesForMedia removeObjectForKey:media[@"id"]];
 
@@ -496,6 +532,9 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
     NSData *resumeData = [error.userInfo objectForKey:NSURLSessionDownloadTaskResumeData];
     if (resumeData) {
         self.resumeData[media[@"id"]] = resumeData;
+    }
+    else {
+        [self clearDownloadIsLocalForMedia:media];
     }
 
     [self clearDownloadingMetadataForMedia:media];

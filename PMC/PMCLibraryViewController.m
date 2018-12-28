@@ -338,6 +338,13 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
                                                  cell.downloadProgress.superview.bounds.size.width * percent,
                                                  cell.downloadProgress.superview.bounds.size.height
                                                  );
+
+        if ([downloadManager downloadIsLocalForMedia:video]) {
+            cell.downloadProgress.backgroundColor = [UIColor colorWithRed:232/255. green:140/255. blue:255/255. alpha:1];
+        }
+        else {
+            cell.downloadProgress.backgroundColor = [UIColor colorWithRed:140/255. green:191/255. blue:255/255. alpha:1];
+        }
     }
     else {
         cell.downloadProgress.hidden = YES;
