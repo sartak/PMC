@@ -198,6 +198,11 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
     }
 
     download.taskDescription = media[@"id"];
+    if (!download.taskDescription) {
+        [NSException raise:NSInternalInconsistencyException format:@"Unable to set taskDescription for download of media %@", media];
+    }
+
+    NSLog(@"-> %@ / %d", download.taskDescription, (int)download.taskIdentifier);
 
     [download resume];
 
@@ -497,6 +502,11 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
 #pragma mark - NSURLSessionDownloadDelegate
 
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
+    if (!downloadTask.taskDescription) {
+        NSLog(@"<- %@ / %d", downloadTask.taskDescription, (int)downloadTask.taskIdentifier);
+        [NSException raise:NSInternalInconsistencyException format:@"no description for task in didFinishDownloadingToURL"];
+    }
+
     NSDictionary *media = [self downloadingMetadataForMediaId:downloadTask.taskDescription];
 
     [self clearDownloadingMetadataForMedia:media];
@@ -509,6 +519,11 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
 }
 
 -(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+    if (!downloadTask.taskDescription) {
+        NSLog(@"<- %@ / %d", downloadTask.taskDescription, (int)downloadTask.taskIdentifier);
+        [NSException raise:NSInternalInconsistencyException format:@"no description for task in didWriteData"];
+    }
+
     NSDictionary *media = [self downloadingMetadataForMediaId:downloadTask.taskDescription];
     if (totalBytesExpectedToWrite == -1 && self.bytesForMedia[media[@"id"]]) {
         totalBytesExpectedToWrite = [self.bytesForMedia[media[@"id"]] longLongValue];
@@ -526,6 +541,12 @@ NSString * const PMCBackgroundDownloadErrorDidClear = @"PMCBackgroundDownloadErr
     if (!error) {
         return;
     }
+
+    if (!task.taskDescription) {
+        NSLog(@"<- %@ / %d", task.taskDescription, (int)task.taskIdentifier);
+        [NSException raise:NSInternalInconsistencyException format:@"no description for task in didCompleteWithError"];
+    }
+
 
     NSDictionary *media = [self downloadingMetadataForMediaId:task.taskDescription];
 
