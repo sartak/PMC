@@ -1092,7 +1092,32 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 }
 
 -(void)downloadDidProgress:(NSNotification *)event {
-    [self refreshVisibleCells];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        PMCBackgroundDownloadManager *downloadManager = [PMCBackgroundDownloadManager sharedClient];
+        NSDictionary *media = event.userInfo[@"media"];
+        for (UITableViewCell *cell in self.tableView.visibleCells) {
+            NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+            if ([cell isKindOfClass:[PMCVideoTableViewCell class]]) {
+                NSDictionary *record = self.records[indexPath.row];
+                if ([record[@"id"] isEqualToString:media[@"id"]]) {
+                    PMCVideoTableViewCell *videoCell = (PMCVideoTableViewCell *)cell;
+                    float percent = [event.userInfo[@"percent"] floatValue];
+                    videoCell.downloadProgress.hidden = NO;
+                    videoCell.downloadProgress.frame = CGRectMake(videoCell.downloadProgress.superview.bounds.origin.x,
+                                                                  videoCell.downloadProgress.superview.bounds.origin.y,
+                                                                  videoCell.downloadProgress.superview.bounds.size.width * percent,
+                                                                  videoCell.downloadProgress.superview.bounds.size.height
+                                                                  );
+                    if ([downloadManager downloadIsLocalForMedia:record]) {
+                        videoCell.downloadProgress.backgroundColor = [UIColor colorWithRed:232/255. green:140/255. blue:255/255. alpha:1];
+                    }
+                    else {
+                        videoCell.downloadProgress.backgroundColor = [UIColor colorWithRed:140/255. green:191/255. blue:255/255. alpha:1];
+                    }
+                }
+            }
+        }
+    });
 }
 
 -(void)downloadDidComplete:(NSNotification *)event {
