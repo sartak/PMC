@@ -2,7 +2,7 @@
 #import "PMCVideoTableViewCell.h"
 #import "PMCGameTableViewCell.h"
 #import "PMCHTTPClient.h"
-#import "PMCDownloadManager.h"
+#import "PMCBackgroundDownloadManager.h"
 #import "PMCLibraryViewController.h"
 
 NSString * const PMCQueueCurrentDidChangeNotification = @"PMCQueueCurrentDidChangeNotification";
@@ -229,7 +229,7 @@ NSString * const PMCQueueDidChangeNotification = @"PMCQueueDidChangeNotification
     cell.immersionIndicator.hidden = ![[video valueForKeyPath:@"immersible"] boolValue];
     cell.immersionIndicator.tintColor = [UIColor greenColor];
 
-    cell.downloadedIndicator.hidden = ![PMCDownloadManager URLForDownloadedMedia:video mustExist:YES];
+    cell.downloadedIndicator.hidden = ![[PMCBackgroundDownloadManager sharedClient] mediaIsDownloaded:video];
 
     cell.downloadingIndicator.hidden = YES;
 

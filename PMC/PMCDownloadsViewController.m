@@ -1,5 +1,5 @@
 #import "PMCDownloadsViewController.h"
-#import "PMCDownloadManager.h"
+#import "PMCBackgroundDownloadManager.h"
 #import "PMCHTTPClient.h"
 
 @interface PMCDownloadsViewController ()
@@ -42,16 +42,18 @@
 }
 
 -(NSString *)diskDescription {
-    return [NSString stringWithFormat:@"%@ + %@", [self sizeDescription:[PMCDownloadManager appDiskSpace]], [self sizeDescription:[PMCDownloadManager freeDiskSpace]]];
+    return [NSString stringWithFormat:@"%@ + %@", [self sizeDescription:[[PMCBackgroundDownloadManager sharedClient] appDiskSpace]], [self sizeDescription:[[PMCBackgroundDownloadManager sharedClient] freeDiskSpace]]];
 }
 
 -(void)refreshRecordsFromDisk {
     [NSDictionary dictionaryWithObjectsAndKeys:@"test", @"blah", @"other", @"other", nil];
-    
+
+    PMCBackgroundDownloadManager *downloadManager = [PMCBackgroundDownloadManager sharedClient];
+
     NSMutableArray *refreshed = [NSMutableArray array];
-    [refreshed addObjectsFromArray:[PMCDownloadManager failedDownloadMedia]];
-    [refreshed addObjectsFromArray:[PMCDownloadManager downloadingMedia]];
-    [refreshed addObjectsFromArray:[PMCDownloadManager downloadedMedia]];
+    [refreshed addObjectsFromArray:[downloadManager failedDownloadMedia]];
+    [refreshed addObjectsFromArray:[downloadManager downloadingMedia]];
+    [refreshed addObjectsFromArray:[downloadManager downloadedMedia]];
     
     [refreshed sortUsingDescriptors:@[
                                       [NSSortDescriptor sortDescriptorWithKey:@"materialized_path" ascending:YES],
@@ -68,7 +70,7 @@
 
     // filter records through server to update viewing, metadata, etc
     NSMutableArray *ids = [NSMutableArray array];
-    for (NSDictionary *record in [PMCDownloadManager downloadedMedia]) {
+    for (NSDictionary *record in [[PMCBackgroundDownloadManager sharedClient] downloadedMedia]) {
         [ids addObject:record[@"id"]];
     }
     NSString *idString = [ids componentsJoinedByString:@","];

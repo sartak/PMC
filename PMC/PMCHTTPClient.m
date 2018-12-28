@@ -1,5 +1,5 @@
 #import "PMCHTTPClient.h"
-#import "PMCDownloadManager.h"
+#import "PMCBackgroundDownloadManager.h"
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 @import SystemConfiguration.CaptiveNetwork;
 
@@ -15,7 +15,7 @@ NSString * const PMCMediaFinishedNotification = @"PMCMediaFinishedNotification";
 NSString * const PMCQueueChangeNotification = @"PMCQueueChangeNotification";
 NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification";
 
-@interface PMCHTTPClient () <NSURLConnectionDataDelegate, NSURLSessionDownloadDelegate>
+@interface PMCHTTPClient () <NSURLConnectionDataDelegate>
 
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSURLConnection *statusConnection;
@@ -42,7 +42,7 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
 -(instancetype)init {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
         self.session = session;
 
         self.currentlyDownloading = [NSMutableDictionary dictionary];
@@ -239,141 +239,25 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
 }
 
 -(void)mediaFrom:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(NSArray *records, NSError *error))completion {
-    [self jsonFrom:endpoint withParams:params completion:^(NSArray *records, NSError *error) {
-        for (NSDictionary *record in records) {
-            if ([record[@"type"] isEqualToString:@"tree"]) {
-                continue;
-            }
-            [PMCDownloadManager updateMetadataForMedia:record];
-        }
-        completion(records, error);
-    }];
-}
+    [self jsonFrom:endpoint withParams:params completion:^(NSArray *raw, NSError *error) {
+        PMCBackgroundDownloadManager *downloadManager = [PMCBackgroundDownloadManager sharedClient];
 
--(NSURLSessionDownloadTask *)beginDownload:(NSString *)endpoint forMedia:(NSDictionary *)media progress:(void (^)(float progress))progress completion:(void (^)(NSURL *location, NSError *error))completion {
-    NSMutableURLRequest *request = [self requestWithEndpoint:endpoint method:@"GET"];
-    NSLog(@"%@ %@", request.HTTPMethod, request.URL);
+        NSMutableArray *records = [NSMutableArray arrayWithCapacity:raw.count];
+        for (NSDictionary *rawRecord in raw) {
+            NSMutableDictionary *record = [rawRecord mutableCopy];
 
-    NSDictionary *taskInfo = @{
-                               @"completion":completion,
-                               @"progress":progress,
-                               @"media":media,
-                               };
-    NSURLSessionDownloadTask *download = [self.session downloadTaskWithRequest:request];
-    [self.taskInfo setObject:taskInfo forKey:download];
-    [download resume];
-    return download;
-}
-
--(NSURLSessionDownloadTask *)downloadMedia:(NSDictionary *)media withAction:(NSDictionary *)action progress:(void (^)(float progress))progress completion:(void (^)(NSURL *location, NSError *error))completion {
-    return [self beginDownload:action[@"url"] forMedia:media progress:progress completion:^(NSURL *location, NSError *error) {
-        if (error) {
-            NSLog(@"%@", error);
-            [PMCDownloadManager downloadFailedForMedia:media withReason:error.localizedDescription];
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(nil, error);
-                });
-            }
-            return;
-        }
-
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSURL *documentsURL = [fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0];
-        NSURL *subdirURL = [documentsURL URLByAppendingPathComponent:@"downloaded"];
-
-        NSURL *fileURL = [PMCDownloadManager URLForDownloadedMedia:media mustExist:NO];
-
-        if (![fileManager fileExistsAtPath:subdirURL.path]) {
-            NSError *error;
-            [fileManager createDirectoryAtPath:subdirURL.path
-                   withIntermediateDirectories:YES
-                                    attributes:nil
-                                         error:&error];
-            if (error) {
-                NSLog(@"error creating %@: %@", subdirURL.path, error);
-                [PMCDownloadManager downloadFailedForMedia:media withReason:error.localizedDescription];
-                if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        completion(nil, error);
-                    });
+            if (![record[@"type"] isEqualToString:@"tree"]) {
+                if ([record[@"id"] isKindOfClass:[NSNumber class]]) {
+                    record[@"id"] = [record[@"id"] stringValue];
                 }
-                return;
-            }
-        }
 
-        NSError *moveError;
-        if (![fileManager moveItemAtURL:location toURL:fileURL error:&moveError]) {
-            NSLog(@"%@", moveError);
-            [PMCDownloadManager downloadFailedForMedia:media withReason:moveError.localizedDescription];
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(nil, moveError);
-                });
+                [downloadManager takeUpdatesToMetadataForMedia:[record copy]];
             }
-            return;
-        }
-        
-        NSError *attrError;
-        BOOL success = [fileURL setResourceValue:[NSNumber numberWithBool: YES]
-                                          forKey:NSURLIsExcludedFromBackupKey error:&attrError];
-        if (!success) {
-            NSLog(@"%@", attrError);
-            [PMCDownloadManager downloadFailedForMedia:media withReason:attrError.localizedDescription];
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(nil, attrError);
-                });
-            }
-            return;
-        }
 
-        [PMCDownloadManager clearFailedDownloadForMedia:media];
-
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(fileURL, nil);
-            });
+            [records addObject:[record copy]];
         }
+        completion([records copy], error);
     }];
-}
-
--(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
-    float percent = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
-
-    NSDictionary *taskInfo = [self.taskInfo objectForKey:downloadTask];
-    if (taskInfo && taskInfo[@"progress"]) {
-        void (^progress)(float progress) = taskInfo[@"progress"];
-        progress(percent);
-    }
-}
-
--(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
-    if (!error) {
-        return;
-    }
-    
-    NSLog(@"didCompleteWithError");
-    NSDictionary *taskInfo = [self.taskInfo objectForKey:task];
-    if (taskInfo) {
-        if (taskInfo[@"completion"]) {
-            void (^completion)(NSURL *location, NSError *error) = taskInfo[@"completion"];
-            completion(nil, error);
-        }
-        if (taskInfo[@"media"]) {
-            [PMCDownloadManager downloadFailedForMedia:taskInfo[@"media"] withReason:error.localizedDescription];
-        }
-    }
-}
-
--(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
-    NSLog(@"done downloading to %@", location);
-
-    NSDictionary *taskInfo = [self.taskInfo objectForKey:downloadTask];
-    if (taskInfo && taskInfo[@"completion"]) {
-        void (^completion)(NSURL *location, NSError *error) = taskInfo[@"completion"];
-        completion(location, nil);
-    }
 }
 
 -(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
@@ -598,10 +482,7 @@ NSString * const PMCAudioDidChangeNotification = @"PMCAudioDidChangeNotification
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
             NSDictionary *headers = [(NSHTTPURLResponse *)response allHeaderFields];
             if (headers[@"X-PMC-Completed"] && [headers[@"X-PMC-Completed"] boolValue]) {
-                NSDictionary *media = [PMCDownloadManager metadataForDownloadedMedia:viewing[@"mediaId"]];
-                if (media && ![PMCDownloadManager downloadedMediaIsPersisted:media]) {
-                    [PMCDownloadManager deleteDownloadedMedia:media];
-                }
+                [[PMCBackgroundDownloadManager sharedClient] didSendCompletedViewingForMediaId:viewing[@"mediaId"]];
             }
         }
     }];

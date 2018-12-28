@@ -22,8 +22,6 @@ extern NSString * const PMCAudioDidChangeNotification;
 -(void)jsonFrom:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(id json, NSError *error))completion;
 -(void)mediaFrom:(NSString *)endpoint withParams:(NSDictionary *)params completion:(void (^)(NSArray *records, NSError *error))completion;
 
--(NSURLSessionDownloadTask *)downloadMedia:(NSDictionary *)media withAction:(NSDictionary *)action progress:(void (^)(float progress))progress completion:(void (^)(NSURL *location, NSError *error))completion;
-
 -(void)sendViewing:(NSDictionary *)viewing completion:(void (^)(NSError *))completion;
 -(void)sendViewingWithRetries:(NSDictionary *)viewing completion:(void (^)(NSError *error))completion;
 -(BOOL)hasSavedOrProvisionalViewingForMedia:(NSDictionary *)media;
@@ -39,5 +37,7 @@ extern NSString * const PMCAudioDidChangeNotification;
 +(NSString *)device;
 +(NSString *)networkSSID;
 -(NSString *)host;
+
+-(NSMutableURLRequest *)requestWithEndpoint:(NSString *)endpoint method:(NSString *)method;
 
 @end

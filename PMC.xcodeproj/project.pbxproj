@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		29D8F43521D552AD00DB871F /* PMCBackgroundDownloadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 29D8F43421D552AD00DB871F /* PMCBackgroundDownloadManager.m */; };
 		CB031ABB1AB66B2E00A52927 /* PMCGameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CB031AB91AB66B2E00A52927 /* PMCGameTableViewCell.m */; };
 		CB031ABC1AB66B2E00A52927 /* PMCGameTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB031ABA1AB66B2E00A52927 /* PMCGameTableViewCell.xib */; };
 		CB1F61131D3EE3CB0003E873 /* PMCDownloadsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1F61121D3EE3CB0003E873 /* PMCDownloadsViewController.m */; };
@@ -27,7 +28,6 @@
 		CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CB580760194E876200DF387D /* PMCAppDelegate.m */; };
 		CB580763194E876200DF387D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB580762194E876200DF387D /* Images.xcassets */; };
 		CBA7C3881BAB9CFA00EB362C /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CBA7C3871BAB9CFA00EB362C /* Launch.storyboard */; };
-		CBD75CBE1D3EEA5D00F7E8FF /* PMCDownloadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD75CBD1D3EEA5D00F7E8FF /* PMCDownloadManager.m */; };
 		CBE7FAD3194E8A1900311B7E /* PMCLibraryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */; };
 		CBE7FAD5194E8B4B00311B7E /* PMCVideoTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */; };
 		CBE7FAD8194E8D6200311B7E /* PMCVideoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CBE7FAD7194E8D6200311B7E /* PMCVideoTableViewCell.m */; };
@@ -35,6 +35,8 @@
 
 /* Begin PBXFileReference section */
 		29C0C77021589BDC00EFF9CC /* PMC.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PMC.entitlements; sourceTree = "<group>"; };
+		29D8F43321D552AD00DB871F /* PMCBackgroundDownloadManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMCBackgroundDownloadManager.h; sourceTree = "<group>"; };
+		29D8F43421D552AD00DB871F /* PMCBackgroundDownloadManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMCBackgroundDownloadManager.m; sourceTree = "<group>"; };
 		CB031AB81AB66B2E00A52927 /* PMCGameTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCGameTableViewCell.h; sourceTree = "<group>"; };
 		CB031AB91AB66B2E00A52927 /* PMCGameTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCGameTableViewCell.m; sourceTree = "<group>"; };
 		CB031ABA1AB66B2E00A52927 /* PMCGameTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCGameTableViewCell.xib; sourceTree = "<group>"; };
@@ -69,8 +71,6 @@
 		CB580760194E876200DF387D /* PMCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMCAppDelegate.m; sourceTree = "<group>"; };
 		CB580762194E876200DF387D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		CBA7C3871BAB9CFA00EB362C /* Launch.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
-		CBD75CBC1D3EEA5D00F7E8FF /* PMCDownloadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCDownloadManager.h; sourceTree = "<group>"; };
-		CBD75CBD1D3EEA5D00F7E8FF /* PMCDownloadManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCDownloadManager.m; sourceTree = "<group>"; };
 		CBE7FAD1194E8A1900311B7E /* PMCLibraryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMCLibraryViewController.h; sourceTree = "<group>"; };
 		CBE7FAD2194E8A1900311B7E /* PMCLibraryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PMCLibraryViewController.m; sourceTree = "<group>"; };
 		CBE7FAD4194E8B4B00311B7E /* PMCVideoTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PMCVideoTableViewCell.xib; sourceTree = "<group>"; };
@@ -113,8 +113,8 @@
 				CB580760194E876200DF387D /* PMCAppDelegate.m */,
 				CB35204319FAC9A100FA8FD2 /* PMCHTTPClient.h */,
 				CB35204419FAC9A100FA8FD2 /* PMCHTTPClient.m */,
-				CBD75CBC1D3EEA5D00F7E8FF /* PMCDownloadManager.h */,
-				CBD75CBD1D3EEA5D00F7E8FF /* PMCDownloadManager.m */,
+				29D8F43321D552AD00DB871F /* PMCBackgroundDownloadManager.h */,
+				29D8F43421D552AD00DB871F /* PMCBackgroundDownloadManager.m */,
 				CB40C368197DCF5000E8077E /* PMCControlsViewController.h */,
 				CB40C369197DCF5000E8077E /* PMCControlsViewController.m */,
 				CB40C36E197DD7F000E8077E /* PMCControlsViewController.xib */,
@@ -252,8 +252,8 @@
 				CB031ABB1AB66B2E00A52927 /* PMCGameTableViewCell.m in Sources */,
 				CB58075D194E876200DF387D /* main.m in Sources */,
 				CB24721B19FB407200D9FE0D /* PMCFiveStarTableViewCell.m in Sources */,
-				CBD75CBE1D3EEA5D00F7E8FF /* PMCDownloadManager.m in Sources */,
 				CB40C36A197DCF5000E8077E /* PMCControlsViewController.m in Sources */,
+				29D8F43521D552AD00DB871F /* PMCBackgroundDownloadManager.m in Sources */,
 				CB35204519FAC9A100FA8FD2 /* PMCHTTPClient.m in Sources */,
 				CB28F3E51984403300EB184A /* PMCTreeTableViewCell.m in Sources */,
 				CB580761194E876200DF387D /* PMCAppDelegate.m in Sources */,

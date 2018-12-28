@@ -6,8 +6,8 @@
 #import "PMCFiveStarTableViewCell.h"
 #import "PMCOneStarTableViewCell.h"
 #import "PMCHTTPClient.h"
-#import "PMCDownloadManager.h"
 #import "PMCQueueViewController.h"
+#import "PMCBackgroundDownloadManager.h"
 
 @import AVFoundation;
 @import AVKit;
@@ -41,6 +41,12 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didConnect) name:PMCConnectedStatusNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishMedia) name:PMCMediaFinishedNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadDidBegin:) name:PMCBackgroundDownloadDidBegin object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadDidProgress:) name:PMCBackgroundDownloadDidProgress object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadDidComplete:) name:PMCBackgroundDownloadDidComplete object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadDidFail:) name:PMCBackgroundDownloadDidFail object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadErrorDidClear:) name:PMCBackgroundDownloadErrorDidClear object:nil];
     }
     return self;
 }
@@ -249,6 +255,12 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
     PMCVideoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Video" forIndexPath:indexPath];
+    [self updateCell:cell forVideo:video atIndexPath:indexPath];
+    return cell;
+}
+
+-(void)updateCell:(PMCVideoTableViewCell *)cell forVideo:(NSDictionary *)video atIndexPath:(NSIndexPath *)indexPath {
+    PMCBackgroundDownloadManager *downloadManager = [PMCBackgroundDownloadManager sharedClient];
 
     cell.titleLabel.text = [self extractLabelFromRecord:video];
 
@@ -303,26 +315,27 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     cell.immersionIndicator.hidden = ![[video valueForKeyPath:@"immersible"] boolValue];
     cell.immersionIndicator.tintColor = [UIColor greenColor];
 
-    cell.downloadedIndicator.hidden = ![PMCDownloadManager URLForDownloadedMedia:video mustExist:YES];
+    cell.downloadedIndicator.hidden = ![downloadManager mediaIsDownloaded:video];
 
-    cell.downloadingIndicator.hidden = YES;
+    if ([downloadManager mediaIsDownloading:video]) {
+        cell.downloadingIndicator.hidden = NO;
+        [cell.downloadingIndicator startAnimating];
+    }
+    else {
+        cell.downloadingIndicator.hidden = YES;
+    }
 
     // force 12x12, see http://stackoverflow.com/questions/2638120/can-i-change-the-size-of-uiactivityindicator
     cell.downloadingIndicator.transform = CGAffineTransformMakeScale(0.6, 0.6);
 
-    if ([PMCHTTPClient sharedClient].currentlyDownloading[video[@"id"]]) {
-        NSMutableDictionary *download = [PMCHTTPClient sharedClient].currentlyDownloading[video[@"id"]];
-        download[@"cell"] = cell;
-
-        float progress = [download[@"progress"] floatValue];
-
-        cell.downloadingIndicator.hidden = NO;
-        [cell.downloadingIndicator startAnimating];
+    NSNumber *downloadProgress = [downloadManager downloadProgressForMedia:video];
+    if (downloadProgress) {
+        float percent = [downloadProgress floatValue];
 
         cell.downloadProgress.hidden = NO;
         cell.downloadProgress.frame = CGRectMake(cell.downloadProgress.superview.bounds.origin.x,
                                                  cell.downloadProgress.superview.bounds.origin.y,
-                                                 cell.downloadProgress.superview.bounds.size.width * progress,
+                                                 cell.downloadProgress.superview.bounds.size.width * percent,
                                                  cell.downloadProgress.superview.bounds.size.height
                                                  );
     }
@@ -330,7 +343,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         cell.downloadProgress.hidden = YES;
     }
 
-    if ([PMCDownloadManager reasonForFailedDownloadOfMedia:video]) {
+    if ([downloadManager downloadErrorForMedia:video]) {
         cell.titleLabel.textColor = [UIColor redColor];
     }
     else {
@@ -374,8 +387,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
         cell.backgroundColor = [UIColor colorWithHue:117/360. saturation:saturation brightness:1 alpha:1];
     }
-
-    return cell;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForGame:(NSDictionary *)game atIndexPath:(NSIndexPath *)indexPath {
@@ -494,7 +505,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 }
 
 -(void)shareDownloadedMedia:(NSDictionary *)media fromCell:(UITableViewCell *)cell {
-    NSURL *url = [PMCDownloadManager URLForDownloadedMedia:media mustExist:YES];
+    NSURL *url = [[PMCBackgroundDownloadManager sharedClient] URLForDownloadedMedia:media mustExist:YES];
     if (url) {
         UIActivityViewController *activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
 
@@ -564,6 +575,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 #pragma mark - UITableViewDelegate
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    PMCBackgroundDownloadManager *downloadManager = [PMCBackgroundDownloadManager sharedClient];
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     NSDictionary *record = self.records[indexPath.row];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -588,7 +600,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         message = [NSString stringWithFormat:@"%@\n(%@)", message, [self preferredSpokenLanguages:record]];
     }
 
-    NSString *downloadError = [PMCDownloadManager reasonForFailedDownloadOfMedia:record];
+    NSString *downloadError = [downloadManager downloadErrorForMedia:record];
     if (downloadError) {
         message = downloadError;
     }
@@ -600,24 +612,23 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
 
         for (NSDictionary *action in record[@"actions"]) {
             if ([action[@"type"] isEqualToString:@"download"]) {
-                NSURL *url = [PMCDownloadManager URLForDownloadedMedia:record mustExist:YES];
-                if (url) {
-                    // we have already downloaded this file, so add play and delete actions in place of download
+                if ([downloadManager mediaIsDownloaded:record]) {
+                    NSURL *url = [downloadManager URLForDownloadedMedia:record mustExist:YES];
                     if ([[record valueForKeyPath:@"resume.seconds"] intValue]) {
                         UIAlertAction *playAction = [UIAlertAction actionWithTitle:@"Play Downloaded from Beginning"
-                                                                               style:UIAlertActionStyleDefault
-                                                                             handler:^(UIAlertAction *alertAction) {
-                                                                                 [self beginPlayingURL:url forRecord:record withAction:action];
-                                                                             }];
+                                                                             style:UIAlertActionStyleDefault
+                                                                           handler:^(UIAlertAction *alertAction) {
+                                                                               [self beginPlayingURL:url forRecord:record withAction:action];
+                                                                           }];
                         [alert addAction:playAction];
 
                         NSMutableDictionary *actionForPlay = [action mutableCopy];
                         actionForPlay[@"seek"] = [record valueForKeyPath:@"resume.seconds"];
                         UIAlertAction *resumeAction = [UIAlertAction actionWithTitle:@"Resume Downloaded"
-                                                                             style:UIAlertActionStyleDefault
-                                                                           handler:^(UIAlertAction *alertAction) {
-                                                                               [self beginPlayingURL:url forRecord:record withAction:actionForPlay];
-                                                                           }];
+                                                                               style:UIAlertActionStyleDefault
+                                                                             handler:^(UIAlertAction *alertAction) {
+                                                                                 [self beginPlayingURL:url forRecord:record withAction:actionForPlay];
+                                                                             }];
                         [alert addAction:resumeAction];
                     }
                     else {
@@ -636,76 +647,59 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
                                                                         }];
                     [alert addAction:shareAction];
 
-                    if (![PMCDownloadManager downloadedMediaIsPersisted:record]) {
+                    if (![downloadManager downloadedMediaIsPersisted:record]) {
                         UIAlertAction *persistAction = [UIAlertAction actionWithTitle:@"Disable Autodelete"
                                                                                 style:UIAlertActionStyleDefault
                                                                               handler:^(UIAlertAction *alertAction) {
-                                                                                  [PMCDownloadManager persistDownloadedMedia:record];
+                                                                                  [downloadManager persistDownloadedMedia:record];
                                                                               }];
-                    
+
                         [alert addAction:persistAction];
                     }
 
                     UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"Delete Downloaded"
                                                                            style:UIAlertActionStyleDestructive
                                                                          handler:^(UIAlertAction *alertAction) {
-                        [PMCDownloadManager deleteDownloadedMedia:record];
+                                                                             [downloadManager deleteDownloadedMedia:record];
 
-                        [UIView animateWithDuration:0.5 animations:^{
-                            videoCell.downloadedIndicator.alpha = 0;
-                        } completion:^(BOOL finished) {
-                            videoCell.downloadedIndicator.hidden = YES;
-                            videoCell.downloadedIndicator.alpha = 1;
-                            [self refreshRecordsAnimated:NO];
-                        }];
-                    }];
+                                                                             [UIView animateWithDuration:0.5 animations:^{
+                                                                                 videoCell.downloadedIndicator.alpha = 0;
+                                                                             } completion:^(BOOL finished) {
+                                                                                 videoCell.downloadedIndicator.hidden = YES;
+                                                                                 videoCell.downloadedIndicator.alpha = 1;
+                                                                                 [self refreshRecordsAnimated:NO];
+                                                                             }];
+                                                                         }];
 
                     [alert addAction:deleteAction];
-                    continue;
-                }
-                else if ([PMCHTTPClient sharedClient].currentlyDownloading[record[@"id"]]) {
-                    NSMutableDictionary *download = [PMCHTTPClient sharedClient].currentlyDownloading[record[@"id"]];
-                    NSURLSessionDownloadTask *task = download[@"task"];
-
-                    if (task.state == NSURLSessionTaskStateSuspended) {
-                        UIAlertAction *pauseAction = [UIAlertAction actionWithTitle:@"Unpause Download"
-                                                                              style:UIAlertActionStyleDefault
-                                                                            handler:^(UIAlertAction *alertAction) {
-                                                                                [task resume];
-                                                                                [videoCell.downloadingIndicator startAnimating];
-                                                                            }];
-                        [alert addAction:pauseAction];
-                    }
-                    else {
-                        UIAlertAction *pauseAction = [UIAlertAction actionWithTitle:@"Pause Download"
-                                                                              style:UIAlertActionStyleDefault
-                                                                            handler:^(UIAlertAction *alertAction) {
-                                                                                [task suspend];
-                                                                                [videoCell.downloadingIndicator stopAnimating];
-                                                                            }];
-                        [alert addAction:pauseAction];
-                    }
-
+                } else if ([downloadManager mediaIsDownloading:record]) {
                     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel Download"
                                                                            style:UIAlertActionStyleDestructive
                                                                          handler:^(UIAlertAction *alertAction) {
-                                                                             [task cancel];
+                                                                             [downloadManager cancelMediaDownload:record];
                                                                          }];
                     [alert addAction:cancelAction];
-                    continue;
+                } else { // to download
+                    if ([downloadManager downloadErrorForMedia:record]) {
+                        UIAlertAction *clearErrorAction = [UIAlertAction actionWithTitle:@"Clear Error"
+                                                                                    style:UIAlertActionStyleDestructive
+                                                                                  handler:^(UIAlertAction *alertAction) {
+                                                                                      [downloadManager clearDownloadErrorForMedia:record];
+                                                                                  }];
+                        [alert addAction:clearErrorAction];
+                    }
+
+                    NSString *title = [downloadManager downloadResumeDataForMedia:record] ? @"Resume Download" : [downloadManager downloadErrorForMedia:record] ? @"Retry Download" : @"Download";
+
+                    UIAlertAction *downloadAction = [UIAlertAction actionWithTitle:title
+                                                                             style:UIAlertActionStyleDefault
+                                                                           handler:^(UIAlertAction *alertAction) {
+                                                                               [downloadManager downloadMedia:record usingAction:action];
+                                                                           }];
+                    [alert addAction:downloadAction];
                 }
-                else if (downloadError) {
-                    UIAlertAction *retryAction = [UIAlertAction actionWithTitle:@"Retry Download"
-                                                                          style:UIAlertActionStyleDefault
-                                                                        handler:^(UIAlertAction *alertAction) {
-                                                                            [PMCDownloadManager clearFailedDownloadForMedia:record];
-                                                                            [self selectedAction:action forRecord:record fromCell:cell];
-                                                                            [self refreshRecordsAnimated:NO];
-                                                                        }];
-                    
-                    [alert addAction:retryAction];
-                    continue;
-                }
+
+                continue;
             }
 
             UIAlertAction *alertAction = [UIAlertAction actionWithTitle:action[@"label"]
@@ -716,17 +710,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
             [alert addAction:alertAction];
         }
 
-        if (downloadError) {
-            UIAlertAction *clearAction = [UIAlertAction actionWithTitle:@"Clear Failed Download"
-                                                                   style:UIAlertActionStyleDestructive
-                                                                 handler:^(UIAlertAction *alertAction) {
-                                                                     [PMCDownloadManager clearFailedDownloadForMedia:record];
-                                                                     [self refreshRecordsAnimated:NO];
-                                                                 }];
-            
-            [alert addAction:clearAction];
-        }
-        
         [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
 
         alert.popoverPresentationController.sourceView = self.view;
@@ -753,7 +736,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
         [self beginStreaming:record usingAction:action];
     }
     else if ([action[@"type"] isEqualToString:@"download"]) {
-        [self beginDownload:record usingAction:action fromCell:cell];
+        [[PMCBackgroundDownloadManager sharedClient] downloadMedia:record usingAction:action];
     }
     else if ([action[@"type"] isEqualToString:@"navigate"]) {
         PMCLibraryViewController *next = [[PMCLibraryViewController alloc] initWithRequestPath:action[@"url"] forRecord:record withQueue:self.queue];
@@ -772,82 +755,6 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
                                           [self refreshRecordsAnimated:NO];
                                       }];
     }
-}
-
--(void)beginDownload:(NSDictionary *)record usingAction:(NSDictionary *)action fromCell:(UITableViewCell *)cell {
-    PMCVideoTableViewCell *videoCell;
-    if ([cell isKindOfClass:[PMCVideoTableViewCell class]]) {
-         videoCell = (PMCVideoTableViewCell *)cell;
-    }
-
-    NSMutableDictionary *progress =[@{
-                                      @"progress": @(0.0),
-                                      @"cell": cell,
-                                      @"media": record,
-                                      } mutableCopy];
-
-    [PMCHTTPClient sharedClient].currentlyDownloading[record[@"id"]] = progress;
-
-    videoCell.downloadingIndicator.hidden = NO;
-    [videoCell.downloadingIndicator startAnimating];
-
-    videoCell.downloadProgress.hidden = NO;
-    
-    if ([[PMCHTTPClient sharedClient].host containsString:@"local"]) {
-        videoCell.downloadProgress.backgroundColor = [UIColor colorWithRed:232/255. green:140/255. blue:255/255. alpha:1];
-    }
-    else {
-        videoCell.downloadProgress.backgroundColor = [UIColor colorWithRed:140/255. green:191/255. blue:255/255. alpha:1];
-    }
-
-    videoCell.downloadProgress.frame = CGRectMake(videoCell.downloadProgress.superview.bounds.origin.x,
-                                                  videoCell.downloadProgress.superview.bounds.origin.y,
-                                                  0,
-                                                  videoCell.downloadProgress.superview.bounds.size.height
-                                                  );
-
-    NSURLSessionDownloadTask *task = [[PMCHTTPClient sharedClient] downloadMedia:record withAction:action progress:^(float percent) {
-        progress[@"progress"] = @(percent);
-
-        PMCVideoTableViewCell *cell = progress[@"cell"];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            cell.downloadProgress.frame = CGRectMake(cell.downloadProgress.superview.bounds.origin.x,
-                                                     cell.downloadProgress.superview.bounds.origin.y,
-                                                     cell.downloadProgress.superview.bounds.size.width * percent,
-                                                     cell.downloadProgress.superview.bounds.size.height
-                                                     );
-        });
-    } completion:^(NSURL *location, NSError *error) {
-        PMCVideoTableViewCell *cell = progress[@"cell"];
-
-        [UIView animateWithDuration:0.3 animations:^{
-            if (!error) {
-                cell.downloadProgress.frame = CGRectMake(cell.downloadProgress.superview.bounds.origin.x,
-                                                         cell.downloadProgress.superview.bounds.origin.y,
-                                                         cell.downloadProgress.superview.bounds.size.width,
-                                                         cell.downloadProgress.superview.bounds.size.height
-                                                         );
-            }
-        } completion:^(BOOL finished) {
-            cell.downloadingIndicator.hidden = YES;
-            [cell.downloadingIndicator stopAnimating];
-            [UIView animateWithDuration:1 animations:^{
-                cell.downloadProgress.alpha = 0;
-            } completion:^(BOOL finished) {
-                cell.downloadProgress.alpha = 1;
-                cell.downloadProgress.hidden = YES;
-                cell.downloadedIndicator.hidden = error ? YES : NO;
-
-                [[PMCHTTPClient sharedClient].currentlyDownloading removeObjectForKey:record[@"id"]];
-                [PMCDownloadManager saveMetadataForDownloadedMedia:record];
-
-                [self refreshRecordsAnimated:NO];
-            }];
-        }];
-    }];
-
-    progress[@"task"] = task;
 }
 
 -(void)beginStreaming:(NSDictionary *)record usingAction:(NSDictionary *)action {
@@ -1070,7 +977,7 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     }
 
     return @{
-             @"mediaId": [media[@"id"] stringValue],
+             @"mediaId": media[@"id"],
              @"startTime": [@([stream[@"startTime"] timeIntervalSince1970]) stringValue],
              @"endTime": [@([[NSDate date] timeIntervalSince1970]) stringValue],
              @"initialSeconds": [stream[@"initialSeconds"] stringValue],
@@ -1159,6 +1066,38 @@ NSString * const PMCLanguageDidChangeNotification = @"PMCLanguageDidChangeNotifi
     // if we're currently watching, don't restore the UI.
     // if we are not watching, then we already sent the viewing entry, so dismiss the video
     return self.currentlyWatching ? NO : YES;
+}
+
+-(void)refreshVisibleCells {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (UITableViewCell *cell in self.tableView.visibleCells) {
+            NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+            if ([cell isKindOfClass:[PMCVideoTableViewCell class]]) {
+                NSDictionary *record = self.records[indexPath.row];
+                [self updateCell:(PMCVideoTableViewCell *)cell forVideo:record atIndexPath:indexPath];
+            }
+        }
+    });
+}
+
+-(void)downloadDidBegin:(NSNotification *)event {
+    [self refreshVisibleCells];
+}
+
+-(void)downloadDidProgress:(NSNotification *)event {
+    [self refreshVisibleCells];
+}
+
+-(void)downloadDidComplete:(NSNotification *)event {
+    [self refreshVisibleCells];
+}
+
+-(void)downloadDidFail:(NSNotification *)event {
+    [self refreshVisibleCells];
+}
+
+-(void)downloadErrorDidClear:(NSNotification *)event {
+    [self refreshVisibleCells];
 }
 
 @end
